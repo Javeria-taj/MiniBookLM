@@ -4,14 +4,8 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
-<<<<<<< HEAD
-import { fetchInsights, fetchMindmap } from '@/lib/api';
-import type { MindmapNode } from '@/lib/types';
-import { MOCK_GRAPH_NODES, MOCK_GRAPH_EDGES } from '@/lib/mockData';
-=======
-import { fetchGraph } from '@/lib/api';
-import type { GraphResponse } from '@/lib/types';
->>>>>>> db531084df4b64b3bc40696b36fe62faf11923ee
+import { fetchInsights, fetchMindmap, fetchGraph } from '@/lib/api';
+import type { MindmapNode, GraphResponse } from '@/lib/types';
 
 // ── Node type → colour mapping ────────────────────────────────
 const NODE_COLORS: Record<string, string> = {
@@ -244,7 +238,6 @@ function NotesTab() {
   const [newTag, setNewTag] = useState<'insight' | 'tip' | 'warning'>('insight');
 
   const tagStyles: Record<string, { bg: string; color: string; border: string }> = {
-<<<<<<< HEAD
     insight: { bg: 'rgba(92, 143, 114, 0.15)', color: '#5C8F72', border: '#5C8F72' },
     tip:     { bg: 'rgba(139, 126, 200, 0.15)', color: '#8B7EC8', border: '#8B7EC8' },
     warning: { bg: 'rgba(201, 112, 90, 0.15)',  color: '#C9705A', border: '#C9705A' },
@@ -276,65 +269,23 @@ function NotesTab() {
     addNote({ id: crypto.randomUUID(), tag: newTag, text: newText.trim() });
     setNewText('');
     setAddingNote(false);
-=======
-    insight: { bg: 'rgba(92,143,114,0.15)',  color: '#5C8F72', border: '#5C8F72' },
-    tip:     { bg: 'rgba(139,126,200,0.15)', color: '#8B7EC8', border: '#8B7EC8' },
-    warning: { bg: 'rgba(201,112,90,0.15)',  color: '#C9705A', border: '#C9705A' },
->>>>>>> db531084df4b64b3bc40696b36fe62faf11923ee
   };
 
   return (
     <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
         <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>INSIGHT FEED</h3>
-        <button
-<<<<<<< HEAD
+      <button
           onClick={loadInsights}
           disabled={loading}
           style={{ background: 'none', border: 'none', color: loading ? 'var(--accent)' : 'var(--text-secondary)', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', cursor: loading ? 'not-allowed' : 'pointer', fontWeight: 700, transition: 'var(--transition)' }}
-=======
-          onClick={() => { setRefreshing(true); setNotes([...notes].sort(() => Math.random() - 0.5)); setTimeout(() => setRefreshing(false), 600); }}
-          style={{ background: 'none', border: 'none', color: refreshing ? 'var(--accent)' : 'var(--text-secondary)', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 700 }}
->>>>>>> db531084df4b64b3bc40696b36fe62faf11923ee
         >
           {loading ? 'LOADING...' : 'REFRESH'}
         </button>
       </div>
-
-<<<<<<< HEAD
-      {/* Skeleton loader */}
-      {loading && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {[80, 60, 90].map((w, i) => (
-            <div key={i} style={{ padding: 16, border: 'var(--border-heavy)', background: 'var(--bg-elevated)' }}>
-              <div className="skeleton-line" style={{ width: '30%', marginBottom: 10 }} />
-              <div className="skeleton-line" style={{ width: `${w}%` }} />
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Error state */}
-      {!loading && error && (
-        <div style={{ padding: 20, border: '2px solid #C9705A', background: 'rgba(201,112,90,0.08)', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', color: '#C9705A', fontWeight: 700 }}>COULD NOT LOAD INSIGHTS</p>
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>{error}</p>
-          <button
-            onClick={loadInsights}
-            style={{ padding: '8px 16px', border: '2px solid #C9705A', background: 'rgba(201,112,90,0.15)', color: '#C9705A', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 700 }}
-          >
-            RETRY
-          </button>
-        </div>
-      )}
-
       {/* Notes list */}
       {!loading && !error && notes.map(n => {
         const s = tagStyles[n.tag] || tagStyles.insight;
-=======
-      {notes.map(n => {
-        const s = tagStyles[n.tag] ?? tagStyles.insight;
->>>>>>> db531084df4b64b3bc40696b36fe62faf11923ee
         return (
           <div key={n.id} style={{ padding: 16, border: 'var(--border-heavy)', background: 'var(--bg-elevated)', position: 'relative', boxShadow: 'var(--shadow-sm)' }}>
             <div style={{ display: 'inline-block', marginBottom: 8, background: s.bg, border: `2px solid ${s.border}`, padding: '2px 8px', fontSize: '0.65rem', fontWeight: 700, color: s.color, fontFamily: 'var(--font-mono)' }}>
@@ -365,17 +316,12 @@ function NotesTab() {
         <button onClick={() => setAddingNote(true)} style={{ padding: 12, border: '2px dashed var(--border-strong)', background: 'none', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', fontSize: '0.85rem', cursor: 'pointer', fontWeight: 700 }}>
           + ADD MANUAL ENTRY
         </button>
-<<<<<<< HEAD
       ))}
       <style jsx>{`.add-note-btn:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--accent); }`}</style>
-=======
-      )}
->>>>>>> db531084df4b64b3bc40696b36fe62faf11923ee
     </div>
   );
 }
 
-<<<<<<< HEAD
 
 // ── Mindmap recursive node ────────────────────────────────────
 function MindmapNodeComponent({ node, depth }: { node: MindmapNode; depth: number }) {
@@ -538,9 +484,7 @@ function MindmapTab() {
   );
 }
 
-=======
 // ── CitationsTab ──────────────────────────────────────────────
->>>>>>> db531084df4b64b3bc40696b36fe62faf11923ee
 function CitationsTab() {
   const { citations } = useAppStore();
   const [copied, setCopied] = useState<string | null>(null);
