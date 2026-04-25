@@ -162,3 +162,35 @@ class VideoStatusResponse(BaseModel):
     job_id: str
     status: str                  # "processing" | "completed" | "failed"
     iframe_url: str | None = None
+
+
+# ---------------------------------------------------------------------------
+# GET /notebook/{id}/quiz
+# ---------------------------------------------------------------------------
+
+class QuizQuestion(BaseModel):
+    q: str
+    options: list[str]
+    correct: int  # 0-based index into options
+
+
+class QuizResponse(BaseModel):
+    questions: list[QuizQuestion]
+    notebook_id: str
+
+
+# ---------------------------------------------------------------------------
+# GET /notebook/{id}/flashcards
+# ---------------------------------------------------------------------------
+
+class Flashcard(BaseModel):
+    id: int
+    front: str
+    back: str
+
+
+class FlashcardResponse(BaseModel):
+    flashcards: list[Flashcard]
+    notebook_id: str
+
+

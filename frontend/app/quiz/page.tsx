@@ -1,23 +1,87 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Home, RotateCcw, CheckCircle } from 'lucide-react';
-import { MOCK_QUIZ } from '@/lib/mockData';
+import { fetchQuiz } from '@/lib/api';
+import type { QuizQuestion } from '@/lib/types';
+
+const NOTEBOOK_ID = 'default-notebook';
 
 export default function QuizPage() {
+  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState(false);
 
-  const score = submitted ? MOCK_QUIZ.filter((q, i) => answers[i] === q.correct).length : 0;
-  const pct = submitted ? Math.round((score / MOCK_QUIZ.length) * 100) : 0;
-  const reset = () => { setAnswers({}); setSubmitted(false); };
+  const loadQuiz = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await fetchQuiz(NOTEBOOK_ID);
+      setQuestions(data.questions);
+    } catch (err) {
+      setError((err as Error).message || 'Failed to load quiz');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const tagStyles: Record<string, { bg: string; color: string; border: string }> = {
-    insight: { bg: 'rgba(92, 143, 114, 0.15)', color: '#5C8F72', border: '#5C8F72' },
-    tip:     { bg: 'rgba(139, 126, 200, 0.15)', color: '#8B7EC8', border: '#8B7EC8' },
-    warning: { bg: 'rgba(201, 112, 90, 0.15)',  color: '#C9705A', border: '#C9705A' },
+  useEffect(() => {
+    loadQuiz();
+  }, [loadQuiz]);
+
+  const score = submitted ? questions.filter((q, i) => answers[i] === q.correct).length : 0;
+  const pct = submitted ? Math.round((score / questions.length) * 100) : 0;
+  
+  const reset = () => { 
+    setAnswers({}); 
+    setSubmitted(false); 
   };
+
+  const retryLoad = () => {
+    loadQuiz();
+  };
+
+  if (loading) {
+    return (
+      <div style={{ height: '100dvh', background: 'var(--bg-base)', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 20 }}>
+        <div className="skeleton-orb" style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--accent-subtle)', border: 'var(--border-accent)', animation: 'pulse 1.5s ease-in-out infinite' }} />
+        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '1rem', color: 'var(--accent)', fontWeight: 700 }}>GENERATING YOUR QUIZ...</p>
+        <style>{`@keyframes pulse { 0%, 100% { opacity: 0.5; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1.05); } }`}</style>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ height: '100dvh', background: 'var(--bg-base)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 24, padding: 24, textAlign: 'center' }}>
+        <div style={{ fontSize: '3rem' }}>⚠️</div>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', color: '#C9705A' }}>COULD NOT GENERATE QUIZ</h2>
+        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.9rem', color: 'var(--text-secondary)', maxWidth: 400 }}>{error}</p>
+        <button 
+          onClick={retryLoad}
+          style={{ padding: '12px 32px', background: 'var(--accent)', border: 'var(--border-accent)', color: 'var(--text-on-accent)', fontFamily: 'var(--font-mono)', fontSize: '1rem', fontWeight: 700, cursor: 'pointer', boxShadow: 'var(--shadow-accent)' }}
+        >
+          RETRY GENERATION
+        </button>
+      </div>
+    );
+  }
+
+  if (questions.length === 0) {
+    return (
+      <div style={{ height: '100dvh', background: 'var(--bg-base)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 24, padding: 24, textAlign: 'center' }}>
+        <div style={{ fontSize: '3rem' }}>📭</div>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', color: 'var(--text-secondary)' }}>NO QUESTIONS GENERATED</h2>
+        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.9rem', color: 'var(--text-muted)', maxWidth: 400 }}>Try uploading more detailed documents to help Gemini generate a quiz.</p>
+        <Link href="/" style={{ padding: '12px 32px', background: 'var(--bg-elevated)', border: 'var(--border-heavy)', color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', fontSize: '1rem', fontWeight: 700, textDecoration: 'none', boxShadow: 'var(--shadow-sm)' }}>
+          RETURN TO DASHBOARD
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--bg-base)', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-mono)' }}>
@@ -28,7 +92,7 @@ export default function QuizPage() {
         </Link>
         <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '0.05em' }}>KNOWLEDGE QUIZ</h1>
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 700 }}>
-          {Object.keys(answers).length} / {MOCK_QUIZ.length} ANSWERED
+          {Object.keys(answers).length} / {questions.length} ANSWERED
         </div>
       </nav>
 
@@ -41,7 +105,7 @@ export default function QuizPage() {
             <CheckCircle size={40} color={pct >= 70 ? '#5C8F72' : '#C9705A'} style={{ margin: '0 auto' }} />
             <div style={{ fontFamily: 'var(--font-display)', fontSize: '3rem', fontWeight: 900, color: pct >= 70 ? '#5C8F72' : '#C9705A' }}>{pct}%</div>
             <div style={{ fontSize: '1rem', color: 'var(--text-primary)', fontWeight: 700 }}>
-              {score} / {MOCK_QUIZ.length} CORRECT
+              {score} / {questions.length} CORRECT
             </div>
             <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
               {pct >= 80 ? 'EXCELLENT — You have mastered these concepts.' : pct >= 60 ? 'GOOD EFFORT — Review the highlighted questions below.' : 'KEEP STUDYING — Re-read your documents and try again.'}
@@ -53,8 +117,7 @@ export default function QuizPage() {
         )}
 
         {/* Questions */}
-        {MOCK_QUIZ.map((q, qi) => {
-          const answered = answers[qi] !== undefined;
+        {questions.map((q, qi) => {
           const isSubmitted = submitted;
           return (
             <div key={qi} style={{ background: 'var(--bg-elevated)', border: 'var(--border-heavy)', boxShadow: 'var(--shadow-sm)', overflow: 'hidden' }}>
@@ -107,18 +170,18 @@ export default function QuizPage() {
         {/* Submit button */}
         {!submitted && (
           <button
-            onClick={() => { if (Object.keys(answers).length === MOCK_QUIZ.length) setSubmitted(true); }}
-            disabled={Object.keys(answers).length < MOCK_QUIZ.length}
+            onClick={() => { if (Object.keys(answers).length === questions.length) setSubmitted(true); }}
+            disabled={Object.keys(answers).length < questions.length}
             style={{
               padding: '14px 32px', border: 'var(--border-accent)',
-              background: Object.keys(answers).length === MOCK_QUIZ.length ? 'var(--accent)' : 'var(--bg-elevated)',
-              color: Object.keys(answers).length === MOCK_QUIZ.length ? 'var(--text-on-accent)' : 'var(--text-muted)',
-              fontFamily: 'var(--font-mono)', fontSize: '1rem', cursor: Object.keys(answers).length === MOCK_QUIZ.length ? 'pointer' : 'not-allowed',
+              background: Object.keys(answers).length === questions.length ? 'var(--accent)' : 'var(--bg-elevated)',
+              color: Object.keys(answers).length === questions.length ? 'var(--text-on-accent)' : 'var(--text-muted)',
+              fontFamily: 'var(--font-mono)', fontSize: '1rem', cursor: Object.keys(answers).length === questions.length ? 'pointer' : 'not-allowed',
               fontWeight: 700, transition: 'var(--transition)', boxShadow: 'var(--shadow-accent)', alignSelf: 'center',
             }}
-            className={Object.keys(answers).length === MOCK_QUIZ.length ? 'quiz-btn' : ''}
+            className={Object.keys(answers).length === questions.length ? 'quiz-btn' : ''}
           >
-            SUBMIT ANSWERS ({Object.keys(answers).length}/{MOCK_QUIZ.length} ANSWERED)
+            SUBMIT ANSWERS ({Object.keys(answers).length}/{questions.length} ANSWERED)
           </button>
         )}
       </div>

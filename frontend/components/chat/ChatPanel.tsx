@@ -242,6 +242,7 @@ function MessageBubble({ msg, onSaveNote }: { msg: Message; onSaveNote: (text: s
 
 // ── Main ChatPanel ─────────────────────────────────────────────
 export default function ChatPanel() {
+  const router = useRouter();
   const {
     messages, addMessage, updateLastAIMessage, finalizeLastAIMessage,
     clearMessages, isLoading, setLoading, level, addNote, setActiveTab, setCitations,
@@ -341,6 +342,19 @@ export default function ChatPanel() {
   };
 
   const handleAction = (action: string) => {
+    if (action === 'quiz') {
+      router.push('/quiz');
+      return;
+    }
+    if (action === 'mindmap') {
+      router.push('/mindmap');
+      return;
+    }
+    if (action === 'flashcards') {
+      router.push('/flashcards');
+      return;
+    }
+    
     const preset = ACTION_QUERIES[action];
     if (preset) {
       sendMessage(preset);
@@ -382,7 +396,7 @@ export default function ChatPanel() {
 
       {/* Action bar */}
       <div style={{ display: 'flex', gap: 10, padding: '12px 20px', borderBottom: 'var(--border-heavy)', background: 'var(--bg-surface)', overflowX: 'auto' }}>
-        {['Summarize', 'Explain', 'Quiz', 'Mindmap'].map((a) => (
+        {['Summarize', 'Explain', 'Quiz', 'Mindmap', 'Flashcards'].map((a) => (
           <button
             key={a}
             onClick={() => handleAction(a.toLowerCase())}

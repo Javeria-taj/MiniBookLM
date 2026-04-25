@@ -1,30 +1,84 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, ArrowRight, RotateCcw, Home } from 'lucide-react';
+import { fetchFlashcards } from '@/lib/api';
+import type { Flashcard } from '@/lib/types';
 
-const FLASHCARDS = [
-  { id: 1, front: 'What are Neural Scaling Laws?', back: 'Empirical observations showing that model performance (loss) improves predictably as a power law when you increase model size, dataset size, and compute budget.' },
-  { id: 2, front: 'What is Self-Attention?', back: 'A mechanism where each token in a sequence attends to every other token simultaneously, computing relevance scores via Query × Key dot products, then weighting Values accordingly.' },
-  { id: 3, front: 'What is the Transformer architecture?', back: 'A neural network architecture that relies entirely on attention mechanisms — eliminating recurrence (RNNs) — enabling massive parallelization during training and forming the backbone of all modern LLMs.' },
-  { id: 4, front: 'What is Benchmark Saturation?', back: 'When models reach near-human performance on a benchmark, rendering the benchmark obsolete as a meaningful measure of capability. A recurring challenge in AI evaluation.' },
-  { id: 5, front: 'What is Multi-Head Attention?', back: 'Running self-attention in parallel with multiple learned projection matrices (heads), allowing the model to jointly attend to information from different representation subspaces.' },
-  { id: 6, front: 'What does "Compute-optimal" training mean?', back: 'Given a fixed compute budget, the model size and number of training tokens should be scaled equally for optimal performance (Chinchilla scaling).' },
-];
+const NOTEBOOK_ID = 'default-notebook';
 
 export default function FlashcardsPage() {
+  const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [current, setCurrent] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [known, setKnown] = useState<Set<number>>(new Set());
 
-  const card = FLASHCARDS[current];
-  const progress = Math.round((known.size / FLASHCARDS.length) * 100);
+  const loadFlashcards = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await fetchFlashcards(NOTEBOOK_ID);
+      setFlashcards(data.flashcards);
+    } catch (err) {
+      setError((err as Error).message || 'Failed to load flashcards');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const next = () => { setFlipped(false); setCurrent(c => (c + 1) % FLASHCARDS.length); };
-  const prev = () => { setFlipped(false); setCurrent(c => (c - 1 + FLASHCARDS.length) % FLASHCARDS.length); };
+  useEffect(() => {
+    loadFlashcards();
+  }, [loadFlashcards]);
+
+  const card = flashcards[current];
+  const progress = flashcards.length > 0 ? Math.round((known.size / flashcards.length) * 100) : 0;
+
+  const next = () => { setFlipped(false); setCurrent(c => (c + 1) % flashcards.length); };
+  const prev = () => { setFlipped(false); setCurrent(c => (c - 1 + flashcards.length) % flashcards.length); };
   const markKnown = () => { setKnown(k => { const n = new Set(k); n.add(card.id); return n; }); next(); };
   const reset = () => { setKnown(new Set()); setCurrent(0); setFlipped(false); };
+
+  if (loading) {
+    return (
+      <div style={{ height: '100dvh', background: 'var(--bg-base)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 20 }}>
+        <div className="skeleton-orb" style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--accent-subtle)', border: 'var(--border-accent)', animation: 'pulse 1.5s ease-in-out infinite' }} />
+        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '1rem', color: 'var(--accent)', fontWeight: 700 }}>GENERATING FLASHCARDS...</p>
+        <style>{`@keyframes pulse { 0%, 100% { opacity: 0.5; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1.05); } }`}</style>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ height: '100dvh', background: 'var(--bg-base)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 24, padding: 24, textAlign: 'center' }}>
+        <div style={{ fontSize: '3rem' }}>⚠️</div>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', color: '#C9705A' }}>COULD NOT GENERATE FLASHCARDS</h2>
+        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.9rem', color: 'var(--text-secondary)', maxWidth: 400 }}>{error}</p>
+        <button 
+          onClick={loadFlashcards}
+          style={{ padding: '12px 32px', background: 'var(--accent)', border: 'var(--border-accent)', color: 'var(--text-on-accent)', fontFamily: 'var(--font-mono)', fontSize: '1rem', fontWeight: 700, cursor: 'pointer', boxShadow: 'var(--shadow-accent)' }}
+        >
+          RETRY GENERATION
+        </button>
+      </div>
+    );
+  }
+
+  if (flashcards.length === 0) {
+    return (
+      <div style={{ height: '100dvh', background: 'var(--bg-base)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 24, padding: 24, textAlign: 'center' }}>
+        <div style={{ fontSize: '3rem' }}>📭</div>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', color: 'var(--text-secondary)' }}>NO FLASHCARDS GENERATED</h2>
+        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.9rem', color: 'var(--text-muted)', maxWidth: 400 }}>Try uploading more detailed documents to help Gemini generate flashcards.</p>
+        <Link href="/" style={{ padding: '12px 32px', background: 'var(--bg-elevated)', border: 'var(--border-heavy)', color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', fontSize: '1rem', fontWeight: 700, textDecoration: 'none', boxShadow: 'var(--shadow-sm)' }}>
+          RETURN TO DASHBOARD
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--bg-base)', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-mono)' }}>
@@ -35,7 +89,7 @@ export default function FlashcardsPage() {
         </Link>
         <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '0.05em' }}>FLASHCARDS</h1>
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 700 }}>
-          {current + 1} / {FLASHCARDS.length}
+          {current + 1} / {flashcards.length}
         </div>
       </nav>
 
@@ -50,9 +104,9 @@ export default function FlashcardsPage() {
         {/* Stats row */}
         <div style={{ display: 'flex', gap: 24 }}>
           {[
-            { label: 'TOTAL', value: FLASHCARDS.length, color: 'var(--text-secondary)' },
+            { label: 'TOTAL', value: flashcards.length, color: 'var(--text-secondary)' },
             { label: 'KNOWN', value: known.size, color: '#5C8F72' },
-            { label: 'REMAINING', value: FLASHCARDS.length - known.size, color: 'var(--accent)' },
+            { label: 'REMAINING', value: flashcards.length - known.size, color: 'var(--accent)' },
           ].map(s => (
             <div key={s.label} style={{ textAlign: 'center', padding: '12px 20px', border: 'var(--border-heavy)', background: 'var(--bg-surface)', boxShadow: 'var(--shadow-sm)' }}>
               <div style={{ fontSize: '1.8rem', fontWeight: 900, color: s.color }}>{s.value}</div>
@@ -122,7 +176,7 @@ export default function FlashcardsPage() {
 
         {/* Dot navigation */}
         <div style={{ display: 'flex', gap: 8 }}>
-          {FLASHCARDS.map((c, i) => (
+          {flashcards.map((c, i) => (
             <button key={c.id} onClick={() => { setCurrent(i); setFlipped(false); }} style={{
               width: 10, height: 10,
               background: i === current ? 'var(--accent)' : known.has(c.id) ? '#5C8F72' : 'var(--bg-elevated)',

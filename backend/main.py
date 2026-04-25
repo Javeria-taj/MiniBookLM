@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.config import settings
 from backend.errors import global_exception_handler
 from backend.models import HealthResponse
-from backend.routes import chat, documents, graph, ingest, insights, mindmap, video
+from backend.routes import chat, documents, graph, ingest, insights, mindmap, video, quiz, flashcards
 from pipeline import qdrant_client
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s | %(name)s | %(message)s")
@@ -103,3 +103,5 @@ app.include_router(documents.router)
 app.include_router(graph.router)
 app.include_router(mindmap.router)
 app.include_router(video.router)
+app.include_router(quiz.router)
+app.include_router(flashcards.router)

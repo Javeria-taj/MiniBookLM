@@ -529,11 +529,13 @@ function CitationsTab() {
 export default function RightPanel() {
   const router = useRouter();
   const { activeTab, setActiveTab } = useAppStore();
-  const tabs: { key: typeof activeTab; label: string }[] = [
+  const tabs: { key: string; label: string }[] = [
     { key: 'notes',     label: 'NOTES' },
     { key: 'graph',     label: 'GRAPH' },
     { key: 'citations', label: 'CITATIONS' },
-    { key: 'mindmap',  label: 'MINDMAP' },
+    { key: 'mindmap',   label: 'MINDMAP' },
+    { key: 'quiz',      label: 'QUIZ' },
+    { key: 'flashcards', label: 'FLASHCARDS' },
   ];
 
   return (
@@ -543,8 +545,10 @@ export default function RightPanel() {
           <button
             key={t.key}
             onClick={() => {
-              if (t.key === 'graph') { router.push('/mindmap'); return; }
-              setActiveTab(t.key);
+              if (t.key === 'graph' || t.key === 'mindmap') { router.push('/mindmap'); return; }
+              if (t.key === 'quiz') { router.push('/quiz'); return; }
+              if (t.key === 'flashcards') { router.push('/flashcards'); return; }
+              setActiveTab(t.key as any);
             }}
             style={{
               padding: '8px 10px', border: 'none',

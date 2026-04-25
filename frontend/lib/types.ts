@@ -63,6 +63,22 @@ export interface QuizQuestion {
   correct: number;
 }
 
+export interface QuizResponse {
+  questions: QuizQuestion[];
+  notebook_id: string;
+}
+
+export interface Flashcard {
+  id: number;
+  front: string;
+  back: string;
+}
+
+export interface FlashcardResponse {
+  flashcards: Flashcard[];
+  notebook_id: string;
+}
+
 // ── Graph ───────────────────────────────────────────────────────
 export type NodeType = 'concept' | 'entity' | 'relation';
 

@@ -153,3 +153,112 @@ Required JSON structure:
         "key_topics": [],
         "suggested_questions": [],
     }
+
+
+async def generate_quiz(chunks: list[dict[str, Any]], num_questions: int = 5) -> dict[str, Any]:
+    """
+    Generate multiple-choice quiz questions strictly from document chunks.
+    Each question has 4 options and a 0-indexed 'correct' field.
+    """
+    client = _get_client()
+    context = "\n\n".join(c["text"] for c in chunks)
+
+    prompt = f"""You are a quiz generator. Read the document excerpts below and create exactly {num_questions} multiple-choice quiz questions.
+Return ONLY a valid JSON object — no markdown fences, no preamble, no explanation.
+
+Rules:
+- Every question MUST be answerable from the excerpts. Do not use outside knowledge.
+- Each question has exactly 4 answer options (labeled A–D).
+- 'correct' is the 0-based index of the correct option (0=A, 1=B, 2=C, 3=D).
+
+Required JSON structure:
+{{
+  "questions": [
+    {{
+      "q": "Question text here?",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correct": 0
+    }}
+  ]
+}}
+
+=== DOCUMENT EXCERPTS ===
+{context}"""
+
+    response = await client.aio.models.generate_content(
+        model=settings.gemini_llm_model,
+        contents=prompt
+    )
+    raw = response.text.strip()
+
+    # Attempt 1 — direct parse
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        pass
+
+    # Attempt 2 — extract JSON object from response
+    match = re.search(r"\{.*\}", raw, re.DOTALL)
+    if match:
+        try:
+            return json.loads(match.group())
+        except json.JSONDecodeError:
+            pass
+
+    logger.warning("generate_quiz: could not parse JSON from LLM response. Returning empty quiz.")
+    return {"questions": []}
+
+
+async def generate_flashcards(chunks: list[dict[str, Any]], num_cards: int = 6) -> dict[str, Any]:
+    """
+    Generate study flashcards strictly from document chunks.
+    Each card has a 'front' (question/term) and 'back' (answer/definition).
+    """
+    client = _get_client()
+    context = "\n\n".join(c["text"] for c in chunks)
+
+    prompt = f"""You are a flashcard generator. Read the document excerpts below and create exactly {num_cards} study flashcards.
+Return ONLY a valid JSON object — no markdown fences, no preamble, no explanation.
+
+Rules:
+- Every card MUST be grounded in the excerpts. Do not use outside knowledge.
+- 'front' should be a concise question or key term.
+- 'back' should be a clear, informative answer or definition.
+
+Required JSON structure:
+{{
+  "flashcards": [
+    {{
+      "front": "Question or Term",
+      "back": "Answer or Definition"
+    }}
+  ]
+}}
+
+=== DOCUMENT EXCERPTS ===
+{context}"""
+
+    response = await client.aio.models.generate_content(
+        model=settings.gemini_llm_model,
+        contents=prompt
+    )
+    raw = response.text.strip()
+
+    # Attempt 1 — direct parse
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        pass
+
+    # Attempt 2 — extract JSON object
+    match = re.search(r"\{.*\}", raw, re.DOTALL)
+    if match:
+        try:
+            return json.loads(match.group())
+        except json.JSONDecodeError:
+            pass
+
+    logger.warning("generate_flashcards: could not parse JSON from LLM response. Returning empty list.")
+    return {"flashcards": []}
+
+

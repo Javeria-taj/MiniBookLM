@@ -230,3 +230,23 @@ export async function fetchVideoStatus(
   await assertOk(res, 'fetchVideoStatus');
   return res.json();
 }
+
+// ── GET /notebook/{notebookId}/quiz ──────────────────────────────
+export async function fetchQuiz(
+  notebookId: string,
+): Promise<import('./types').QuizResponse> {
+  const res = await fetch(`${API_BASE}/notebook/${notebookId}/quiz`);
+  await assertOk(res, 'fetchQuiz');
+  return res.json();
+}
+
+// ── GET /notebook/{notebookId}/flashcards ────────────────────────
+export async function fetchFlashcards(
+  notebookId: string,
+): Promise<import('./types').FlashcardResponse> {
+  const res = await fetch(`${API_BASE}/notebook/${notebookId}/flashcards`);
+  await assertOk(res, 'fetchFlashcards');
+  return res.json();
+}
+
+
