@@ -12,7 +12,7 @@ export default function Navbar({
   const { theme, setTheme, level, setLevel, toggleSidebar } = useAppStore();
 
   useEffect(() => {
-    const saved = localStorage.getItem('lumina-theme') as 'dark' | 'light' | null;
+    const saved = localStorage.getItem('minibook-theme') as 'dark' | 'light' | null;
     if (saved) setTheme(saved);
   }, [setTheme]);
 
@@ -59,14 +59,14 @@ export default function Navbar({
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             boxShadow: 'var(--shadow-sm)',
           }}>
-             <span style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--text-on-accent)' }}>L</span>
+             <span style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--text-on-accent)' }}>M</span>
           </div>
           <span style={{
             fontFamily: 'var(--font-display)',
             fontSize: '1.6rem', fontWeight: 700, letterSpacing: '-0.02em',
             color: 'var(--text-primary)',
           }}>
-            LUMINA
+            MiniBook LM
           </span>
         </a>
       </div>

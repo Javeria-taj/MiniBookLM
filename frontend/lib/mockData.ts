@@ -1,5 +1,5 @@
 import type {
-  LuminaDocument,
+  MiniBookDocument,
   Note,
   Citation,
   GraphNode,
@@ -8,7 +8,7 @@ import type {
 } from './types';
 
 // ── Documents ────────────────────────────────────────────────────
-export const MOCK_DOCS: LuminaDocument[] = [
+export const MOCK_DOCS: MiniBookDocument[] = [
   { id: '1', name: 'Research Paper on Neural Scaling Laws.pdf', type: 'pdf',  size: '2.3 MB', pages: 24, tokens: '18k', date: '2 hours ago', active: true  },
   { id: '2', name: 'Attention Is All You Need.pdf',              type: 'pdf',  size: '1.8 MB', pages: 15, tokens: '14k', date: 'Yesterday',  active: false },
   { id: '3', name: 'LLM Evaluation Benchmarks.docx',            type: 'docx', size: '0.9 MB', pages: 8,  tokens: '10k', date: '3 days ago', active: false },

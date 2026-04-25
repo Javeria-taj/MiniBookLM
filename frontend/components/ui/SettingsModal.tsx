@@ -1,12 +1,28 @@
 'use client';
 
 import { X } from 'lucide-react';
+import { useEffect } from 'react';
 import { useAppStore } from '@/store/appStore';
 
 export default function SettingsModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void; }) {
-  const { theme, setTheme, fontSize, setFontSize } = useAppStore();
+  const { theme, setTheme, fontSize, setFontSize, clearMessages, setDocuments, setNotes } = useAppStore();
+
+  // Apply font size to root html element whenever it changes
+  useEffect(() => {
+    const sizeMap = { sm: '13px', md: '15px', lg: '17px' };
+    document.documentElement.style.fontSize = sizeMap[fontSize];
+  }, [fontSize]);
 
   if (!isOpen) return null;
+
+  const handleWipeAll = () => {
+    if (window.confirm('This will permanently delete all documents, messages, and notes. Are you sure?')) {
+      clearMessages();
+      setDocuments([]);
+      setNotes([]);
+      onClose();
+    }
+  };
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(18, 20, 28, 0.8)', backdropFilter: 'blur(4px)' }}>
@@ -34,14 +50,14 @@ export default function SettingsModal({ isOpen, onClose }: { isOpen: boolean; on
           <section>
             <h3 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 12 }}>CORE FONT SIZE</h3>
             <div style={{ display: 'flex', gap: 8 }}>
-              {['sm', 'md', 'lg'].map(s => (
-                <button key={s} onClick={() => setFontSize(s as any)} style={{
+              {(['sm', 'md', 'lg'] as const).map(s => (
+                <button key={s} onClick={() => setFontSize(s)} style={{
                   flex: 1, padding: '8px', border: 'var(--border-heavy)',
                   background: fontSize === s ? 'var(--accent)' : 'var(--bg-elevated)',
                   color: fontSize === s ? 'var(--text-on-accent)' : 'var(--text-primary)',
                   fontFamily: 'var(--font-mono)', fontSize: '0.85rem', cursor: 'pointer',
                   transition: 'var(--transition)', fontWeight: 700,
-                  boxShadow: fontSize === s ? 'var(--shadow-accent)' : 'var(--shadow-sm)'
+                  boxShadow: fontSize === s ? 'var(--shadow-accent)' : 'var(--shadow-sm)',
                 }} className={fontSize !== s ? 'brutal-btn' : ''}>{s.toUpperCase()}</button>
               ))}
             </div>
@@ -49,7 +65,13 @@ export default function SettingsModal({ isOpen, onClose }: { isOpen: boolean; on
           <section>
             <div style={{ padding: '16px', border: '2px solid rgba(201, 112, 90, 0.4)', background: 'rgba(201, 112, 90, 0.05)', textAlign: 'center', boxShadow: '4px 4px 0 rgba(201, 112, 90, 0.15)' }}>
               <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: '#C9705A', marginBottom: 12, fontWeight: 700 }}>DANGER ZONE</p>
-              <button style={{ padding: '8px 16px', border: '2px solid #C9705A', background: 'rgba(201, 112, 90, 0.15)', color: '#C9705A', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', cursor: 'pointer', transition: 'var(--transition)', fontWeight: 700, boxShadow: '2px 2px 0 rgba(201, 112, 90, 0.4)' }} className="danger-btn">WIPE ALL DATA</button>
+              <button
+                onClick={handleWipeAll}
+                style={{ padding: '8px 16px', border: '2px solid #C9705A', background: 'rgba(201, 112, 90, 0.15)', color: '#C9705A', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', cursor: 'pointer', transition: 'var(--transition)', fontWeight: 700, boxShadow: '2px 2px 0 rgba(201, 112, 90, 0.4)' }}
+                className="danger-btn"
+              >
+                WIPE ALL DATA
+              </button>
             </div>
           </section>
         </div>

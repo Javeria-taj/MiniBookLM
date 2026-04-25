@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-//  LUMINA — Shared TypeScript Interfaces
+//  MINIBOOK LM — Shared TypeScript Interfaces
 //  Share these with the backend team immediately — these are the
 //  API contract types that both sides must agree on.
 // ═══════════════════════════════════════════════════════════════
@@ -13,7 +13,7 @@ export type ActionType = 'summarize' | 'explain' | 'quiz' | 'mindmap';
 export type ToastType = 'success' | 'error' | 'info';
 
 // ── Document ────────────────────────────────────────────────────
-export interface LuminaDocument {
+export interface MiniBookDocument {
   id: string;
   name: string;
   type: DocType;
@@ -116,7 +116,7 @@ export interface GenerateResponse {
 }
 
 /** GET /documents */
-export type DocumentsResponse = LuminaDocument[];
+export type DocumentsResponse = MiniBookDocument[];
 
 /** Generic API error */
 export interface ApiError {

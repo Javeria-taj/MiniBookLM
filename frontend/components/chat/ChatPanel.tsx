@@ -31,21 +31,83 @@ function TypingIndicator() {
   );
 }
 
+function DocumentHeartbeat() {
+  const [hover, setHover] = useState(false);
+  const bars = 7;
+  return (
+    <div 
+      className="heartbeat-container"
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+    >
+      {Array.from({ length: bars }).map((_, i) => (
+        <div key={i} className={`bar bar-${i} ${hover ? 'active' : ''}`}></div>
+      ))}
+      <style jsx>{`
+        .heartbeat-container {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          height: 90px;
+          margin-bottom: 32px;
+          cursor: pointer;
+        }
+        .bar {
+          width: 10px;
+          background: var(--accent);
+          border: 2px solid var(--accent);
+          border-radius: 0px;
+          box-shadow: 2px 2px 0 rgba(196, 139, 32, 0.4);
+          animation: pulseSoft 1.5s ease-in-out infinite alternate;
+          transform-origin: bottom;
+        }
+        .bar-0 { height: 15px; animation-delay: 0.0s; }
+        .bar-1 { height: 30px; animation-delay: 0.2s; }
+        .bar-2 { height: 50px; animation-delay: 0.4s; }
+        .bar-3 { height: 70px; animation-delay: 0.6s; }
+        .bar-4 { height: 50px; animation-delay: 0.8s; }
+        .bar-5 { height: 30px; animation-delay: 1.0s; }
+        .bar-6 { height: 15px; animation-delay: 1.2s; }
+
+        @keyframes pulseSoft {
+          0% { transform: scaleY(0.6); opacity: 0.6; }
+          100% { transform: scaleY(1); opacity: 0.9; }
+        }
+
+        .bar.active {
+          animation: pulseActive 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) infinite alternate;
+          background: var(--text-primary);
+          border-color: var(--text-primary);
+          box-shadow: 4px 4px 0 rgba(196, 139, 32, 0.8);
+        }
+        .bar-0.active { height: 30px; animation-delay: 0.0s; }
+        .bar-1.active { height: 60px; animation-delay: 0.1s; }
+        .bar-2.active { height: 100px; animation-delay: 0.2s; }
+        .bar-3.active { height: 130px; animation-delay: 0.3s; }
+        .bar-4.active { height: 100px; animation-delay: 0.4s; }
+        .bar-5.active { height: 60px; animation-delay: 0.5s; }
+        .bar-6.active { height: 30px; animation-delay: 0.6s; }
+
+        @keyframes pulseActive {
+          0% { transform: scaleY(0.3); opacity: 0.8; }
+          100% { transform: scaleY(1.3); opacity: 1; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 function WelcomeScreen({ onChip }: { onChip: (text: string) => void }) {
   const chips = ['Explain scaling laws', 'Summarize core themes', 'Generate quiz', 'Extract methodology'];
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', margin: 'auto', padding: '40px 20px' }}>
-      <div style={{
-        width: 80, height: 80,
-        background: 'var(--accent-glow)', border: 'var(--border-accent)',
-        boxShadow: '0 0 40px var(--accent-glow)', marginBottom: 32,
-        animation: 'orbPulseSoft 4s infinite alternate',
-      }} />
+      <DocumentHeartbeat />
       <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--text-primary)', marginBottom: 16 }}>
-        KNOWLEDGE EXTRACTION
+        YOUR SECOND BRAIN
       </h1>
       <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.9rem', color: 'var(--text-secondary)', maxWidth: 450, lineHeight: 1.6, marginBottom: 32, textTransform: 'uppercase' }}>
-        Raw data analysis engine. Grounded in your sources.
+        Think deeper with your documents. A research companion grounded in your sources.
       </p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center' }}>
         {chips.map((c) => (

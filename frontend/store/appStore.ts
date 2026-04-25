@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type {
-  LuminaDocument,
+  MiniBookDocument,
   Message,
   Note,
   Citation,
@@ -27,9 +27,9 @@ interface AppState {
   setActiveTab: (tab: 'notes' | 'graph' | 'citations') => void;
 
   // Documents
-  documents: LuminaDocument[];
-  setDocuments: (docs: LuminaDocument[]) => void;
-  addDocument: (doc: LuminaDocument) => void;
+  documents: MiniBookDocument[];
+  setDocuments: (docs: MiniBookDocument[]) => void;
+  addDocument: (doc: MiniBookDocument) => void;
   removeDocument: (id: string) => void;
   setActiveDocument: (id: string) => void;
 
@@ -60,7 +60,7 @@ export const useAppStore = create<AppState>((set) => ({
   theme: 'dark',
   setTheme: (t) => {
     document.documentElement.setAttribute('data-theme', t);
-    localStorage.setItem('lumina-theme', t);
+    localStorage.setItem('minibook-theme', t);
     set({ theme: t });
   },
 
