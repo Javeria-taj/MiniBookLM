@@ -199,3 +199,34 @@ export async function fetchMindmap(
   await assertOk(res, 'fetchMindmap');
   return res.json();
 }
+
+// ── POST /notebook/{notebookId}/video/generate ────────────────────
+// Non-blocking — returns job_id immediately (< 2 seconds)
+export async function generateVideo(
+  notebookId: string,
+  audienceLevel: import('./types').UserLevel,
+): Promise<import('./types').VideoGenerateResponse> {
+  const res = await fetch(`${API_BASE}/notebook/${notebookId}/video/generate`, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ audience_level: audienceLevel }),
+  });
+  await assertOk(res, 'generateVideo');
+  return res.json();
+}
+
+// ── GET /notebook/{notebookId}/video/status/{jobId} ───────────────
+// Blocking — backend polls GoSquad until complete (~2-3 min).
+// Call with a long fetch timeout from the component.
+export async function fetchVideoStatus(
+  notebookId: string,
+  jobId: string,
+  signal?: AbortSignal,
+): Promise<import('./types').VideoStatusResponse> {
+  const res = await fetch(
+    `${API_BASE}/notebook/${notebookId}/video/status/${jobId}`,
+    { signal },
+  );
+  await assertOk(res, 'fetchVideoStatus');
+  return res.json();
+}

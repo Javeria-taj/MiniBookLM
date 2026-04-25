@@ -141,3 +141,24 @@ MindmapNode.model_rebuild()
 class MindmapResponse(BaseModel):
     root: MindmapNode
     notebook_id: str
+
+
+# ---------------------------------------------------------------------------
+# POST /notebook/{id}/video/generate
+# GET  /notebook/{id}/video/status/{job_id}
+# ---------------------------------------------------------------------------
+
+class VideoGenerateRequest(BaseModel):
+    audience_level: Literal["beginner", "student", "expert"] = "student"
+
+
+class VideoGenerateResponse(BaseModel):
+    job_id: str
+    topic: str
+    status: str  # always "processing" on initial response
+
+
+class VideoStatusResponse(BaseModel):
+    job_id: str
+    status: str                  # "processing" | "completed" | "failed"
+    iframe_url: str | None = None

@@ -7,7 +7,6 @@ import type {
   Theme,
   UserLevel,
 } from '@/lib/types';
-import { MOCK_DOCS, MOCK_NOTES, MOCK_CITATIONS } from '@/lib/mockData';
 
 interface AppState {
   // Theme
@@ -77,8 +76,8 @@ export const useAppStore = create<AppState>((set) => ({
   activeTab: 'notes',
   setActiveTab: (tab) => set({ activeTab: tab }),
 
-  // Documents
-  documents: MOCK_DOCS,
+  // Documents — start empty; populated by uploadDocument() → addDocument()
+  documents: [] as MiniBookDocument[],
   setDocuments: (docs) => set({ documents: docs }),
   addDocument: (doc) =>
     set((s) => ({
@@ -119,13 +118,13 @@ export const useAppStore = create<AppState>((set) => ({
   isLoading: false,
   setLoading: (v) => set({ isLoading: v }),
 
-  // Notes
-  notes: MOCK_NOTES,
+  // Notes — start empty; populated by "SAVE INSIGHT" or addNote()
+  notes: [] as Note[],
   setNotes: (notes) => set({ notes }),
   addNote: (note) => set((s) => ({ notes: [note, ...s.notes] })),
 
-  // Citations
-  citations: MOCK_CITATIONS,
+  // Citations — start empty; populated by streamQuery done chunk
+  citations: [] as Citation[],
   setCitations: (citations) => set({ citations }),
 
   // Font size

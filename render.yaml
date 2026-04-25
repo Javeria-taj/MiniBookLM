@@ -21,3 +21,7 @@ services:
         value: models/text-embedding-004
       - key: EMBEDDING_DIMENSION
         value: "768"
+      - key: GOSQUAD_SECRET_TOKEN
+        sync: false
+      - key: GOSQUAD_BASE_URL
+        value: https://generate.gosquad.club

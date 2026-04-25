@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     gemini_embedding_model: str = "models/text-embedding-004"
     embedding_dimension: int = 768
 
+    # GoSquad video generation
+    gosquad_base_url: str = "https://generate.gosquad.club"
+    gosquad_secret_token: str   # required — no default; missing → startup crash
+
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
 
 
