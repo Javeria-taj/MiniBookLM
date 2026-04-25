@@ -17,8 +17,8 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Lumina | Knowledge Ops',
-  description: 'Soft brutalism AI knowledge workspace.',
+  title: 'MiniBook LM | Knowledge Ops',
+  description: 'Industrial AI knowledge workspace.',
 };
 
 export default function RootLayout({

@@ -3,26 +3,67 @@
 import { useState } from 'react';
 import { Search, Plus, Trash2 } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
-import type { LuminaDocument, DocType } from '@/lib/types';
+import type { MiniBookDocument, DocType } from '@/lib/types';
 import UploadModal from '@/components/layout/UploadModal';
 
 function DocIcon({ type }: { type: DocType }) {
   const styles: Record<DocType, { bg: string; color: string; border: string }> = {
     pdf:  { bg: 'rgba(201, 112, 90, 0.15)', color: '#C9705A', border: '#C9705A' }, /* Terracotta */
     docx: { bg: 'rgba(139, 126, 200, 0.15)', color: '#8B7EC8', border: '#8B7EC8' }, /* Violet */
-    txt:  { bg: 'var(--accent-subtle)', color: 'var(--accent)', border: 'var(--accent)' }, /* Amber */
+    txt:  { bg: 'rgba(196, 139, 32, 0.15)', color: '#C48B20', border: '#C48B20' }, /* Amber */
     md:   { bg: 'rgba(92, 143, 114, 0.15)', color: '#5C8F72', border: '#5C8F72' }, /* Sage */
   };
   const { bg, color, border } = styles[type] ?? styles.txt;
   return (
-    <div style={{
-      width: 36, height: 36,
-      background: bg, color, border: `2px solid ${border}`,
-      display: 'flex', alignItems: 'center', justifyContent: 'center', 
-      flexShrink: 0, fontSize: '0.7rem', fontWeight: 700,
-      boxShadow: '2px 2px 0 rgba(122, 127, 148, 0.4)',
-    }}>
-      {type.toUpperCase()}
+    <div className="cube-container">
+      <div className="cube">
+        <div className="face front" style={{ background: bg, border: `2px solid ${border}`, color }}>{type.toUpperCase()}</div>
+        <div className="face back" style={{ background: bg, border: `2px solid ${border}` }}></div>
+        <div className="face right" style={{ background: bg, border: `2px solid ${border}` }}></div>
+        <div className="face left" style={{ background: bg, border: `2px solid ${border}` }}></div>
+        <div className="face top" style={{ background: bg, border: `2px solid ${border}` }}></div>
+        <div className="face bottom" style={{ background: bg, border: `2px solid ${border}` }}></div>
+      </div>
+      <style jsx>{`
+        .cube-container {
+          width: 32px; height: 32px;
+          perspective: 400px;
+          flex-shrink: 0;
+          margin-right: 8px;
+        }
+        .cube {
+          width: 100%; height: 100%;
+          position: relative;
+          transform-style: preserve-3d;
+          animation: rotateCube 12s linear infinite;
+        }
+        .face {
+          position: absolute;
+          width: 32px; height: 32px;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 0.65rem; font-weight: 900;
+          background: var(--bg-surface);
+          box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        .front  { transform: rotateY(  0deg) translateZ(16px); }
+        .back   { transform: rotateY(180deg) translateZ(16px); }
+        .right  { transform: rotateY( 90deg) translateZ(16px); }
+        .left   { transform: rotateY(-90deg) translateZ(16px); }
+        .top    { transform: rotateX( 90deg) translateZ(16px); }
+        .bottom { transform: rotateX(-90deg) translateZ(16px); }
+
+        @keyframes rotateCube {
+          0%   { transform: rotateX(-20deg) rotateY(0deg); }
+          100% { transform: rotateX(-20deg) rotateY(360deg); }
+        }
+      `}</style>
+      <style jsx global>{`
+        .doc-item:hover .cube { animation: rotateCubeHover 3s linear infinite !important; }
+        @keyframes rotateCubeHover {
+          0%   { transform: rotateX(-20deg) rotateY(0deg) scale3d(1.15, 1.15, 1.15); }
+          100% { transform: rotateX(-20deg) rotateY(360deg) scale3d(1.15, 1.15, 1.15); }
+        }
+      `}</style>
     </div>
   );
 }
@@ -117,7 +158,7 @@ export default function Sidebar() {
   );
 }
 
-function DocItem({ doc, onSelect, onRemove }: { doc: LuminaDocument; onSelect: () => void; onRemove: (e: any) => void }) {
+function DocItem({ doc, onSelect, onRemove }: { doc: MiniBookDocument; onSelect: () => void; onRemove: (e: any) => void }) {
   return (
     <div
       onClick={onSelect}

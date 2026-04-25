@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-//  LUMINA — API Layer
+//  MINIBOOK LM — API Layer
 //  All functions here are mock-first. To connect to the real
 //  backend, replace the mock logic inside each function body —
 //  the function signatures and return types stay the same.
