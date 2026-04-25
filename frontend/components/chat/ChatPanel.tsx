@@ -5,6 +5,7 @@ import { Send } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import { streamQuery } from '@/lib/api';
 import { formatMessage } from '../../lib/formatMessage';
+import VideoPanel from '@/components/video/VideoPanel';
 import type { Citation, Message, QueryRequest, QuizQuestion } from '@/lib/types';
 
 // ── Preset queries for action buttons ─────────────────────────
@@ -252,6 +253,7 @@ export default function ChatPanel() {
   const [showTyping, setShowTyping] = useState(false);
   const [quizData, setQuizData] = useState<QuizQuestion[] | null>(null);
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [showVideo, setShowVideo] = useState(false);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -353,6 +355,9 @@ export default function ChatPanel() {
   return (
     <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
+      {/* Video generation modal */}
+      <VideoPanel isOpen={showVideo} onClose={() => setShowVideo(false)} />
+
       {/* Toast */}
       {toast && (
         <div style={{
@@ -395,6 +400,26 @@ export default function ChatPanel() {
             {a}
           </button>
         ))}
+
+        {/* VIDEO — special accent button */}
+        <button
+          onClick={() => setShowVideo(true)}
+          disabled={isLoading}
+          style={{
+            padding: '6px 14px',
+            border: '2px solid rgba(107,159,212,0.5)',
+            background: 'rgba(107,159,212,0.1)', color: '#6B9FD4',
+            fontFamily: 'var(--font-mono)', fontSize: '0.8rem',
+            cursor: isLoading ? 'not-allowed' : 'pointer',
+            transition: 'var(--transition)', fontWeight: 700,
+            boxShadow: '2px 2px 0 rgba(107,159,212,0.2)',
+            opacity: isLoading ? 0.5 : 1,
+          }}
+          className="brutal-action-btn"
+        >
+          ▶ VIDEO
+        </button>
+
         <button
           onClick={clearMessages}
           style={{

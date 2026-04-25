@@ -77,6 +77,7 @@ export interface GraphNode {
 export interface GraphEdge {
   source: string;
   target: string;
+  relationship?: string;
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -166,4 +167,23 @@ export interface MindmapNode {
 export interface MindmapResponse {
   root: MindmapNode;
   notebook_id: string;
+}
+
+// ── Video Generation ──────────────────────────────────────────────
+/** POST /notebook/{id}/video/generate */
+export interface VideoGenerateRequest {
+  audience_level: UserLevel;
+}
+
+export interface VideoGenerateResponse {
+  job_id: string;
+  topic:  string;
+  status: string; // "processing"
+}
+
+/** GET /notebook/{id}/video/status/{job_id} */
+export interface VideoStatusResponse {
+  job_id:     string;
+  status:     'processing' | 'completed' | 'failed';
+  iframe_url: string | null;
 }
