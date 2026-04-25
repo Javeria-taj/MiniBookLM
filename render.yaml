@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: notebooklm-backend
+    runtime: python
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port 8000
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: QDRANT_URL
+        sync: false
+      - key: QDRANT_API_KEY
+        sync: false
+      - key: QDRANT_COLLECTION_NAME
+        value: notebooklm_chunks
+      - key: ENVIRONMENT
+        value: production
+      - key: GEMINI_LLM_MODEL
+        value: gemini-1.5-pro
+      - key: GEMINI_EMBEDDING_MODEL
+        value: models/text-embedding-004
+      - key: EMBEDDING_DIMENSION
+        value: "768"
