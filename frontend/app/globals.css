@@ -72,6 +72,38 @@
   --transition: 150ms var(--ease-snap);
 }
 
+html[data-theme="light"] {
+  --bg-base: #F4F4F6;       
+  --bg-surface: #FFFFFF;    
+  --bg-elevated: #EAEAEF;   
+  --bg-hover: #DFDFE5;
+
+  --accent: #B27B1C;        
+  --accent-glow: rgba(178, 123, 28, 0.15);
+  --accent-subtle: rgba(178, 123, 28, 0.15); 
+  
+  --accent-success: #4A7A5D; 
+  --accent-info: #756AB3;    
+  --accent-danger: #B55A46;  
+
+  --text-primary: #1A1D27;   
+  --text-secondary: #5B5F75; 
+  --text-muted: #7A7F94;
+  --text-on-accent: #FFFFFF;
+
+  --border: rgba(26, 29, 39, 0.3);
+  --border-strong: rgba(26, 29, 39, 0.8);
+  --border-heavy: 2px solid var(--border);
+  --border-light: 1px solid rgba(26, 29, 39, 0.15);
+  --border-accent: 2px solid var(--accent);
+
+  --shadow-sm: 2px 2px 0px rgba(26, 29, 39, 0.3);
+  --shadow-md: 4px 4px 0px rgba(26, 29, 39, 0.3);
+  --shadow-lg: 6px 6px 0px rgba(26, 29, 39, 0.3);
+  --shadow-accent: 4px 4px 0px rgba(178, 123, 28, 0.3);
+}
+
+
 /* ── RESET & BASE ───────────────────────────────────────────── */
 *, *::before, *::after { 
   box-sizing: border-box; 
