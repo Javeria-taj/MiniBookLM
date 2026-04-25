@@ -40,10 +40,11 @@ async def answer_question(
     query: str,
     chunks: list[dict[str, Any]],
     history: list[dict[str, str]],
+    audience_level: str = "student",
 ) -> str:
     """
     Build a RAG prompt from the retrieved chunks + conversation history
-    and ask Gemini to produce a cited answer using google-genai.
+    and ask Gemini to produce a cited answer, tuned to the audience level.
     """
     client = _get_client()
 
@@ -63,10 +64,30 @@ async def answer_question(
             turns.append(f"{role}: {msg.get('content', '')}")
         history_block = "\n".join(turns)
 
+    # Audience-level tuning instructions
+    _AUDIENCE_INSTRUCTIONS: dict[str, str] = {
+        "beginner": (
+            "Explain your answer simply, avoid jargon, use analogies and plain language "
+            "as if explaining to someone with no background in this topic."
+        ),
+        "student": (
+            "Explain your answer clearly with some technical depth. Assume the reader has "
+            "basic familiarity with the topic but is still learning."
+        ),
+        "expert": (
+            "Answer with full technical precision. Use domain terminology, skip basic "
+            "explanations, and prioritise depth and accuracy over simplicity."
+        ),
+    }
+    audience_instruction = _AUDIENCE_INSTRUCTIONS.get(audience_level, _AUDIENCE_INSTRUCTIONS["student"])
+
     prompt = f"""You are a precise document Q&A assistant.
 Answer ONLY using the context provided below — do not use outside knowledge.
 For every factual claim, cite the source inline using exactly this format: [Source: filename, Page: N]
 If the context does not contain enough information, say so clearly.
+
+=== AUDIENCE LEVEL ===
+{audience_instruction}
 
 === CONTEXT ===
 {context}
