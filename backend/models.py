@@ -37,6 +37,7 @@ class ChatRequest(BaseModel):
     query: str = Field(..., min_length=1)
     history: list[ChatMessage] = Field(default_factory=list)
     doc_id: str | None = None
+    audience_level: Literal["beginner", "student", "expert"] = "student"
 
 
 class Citation(BaseModel):
@@ -100,3 +101,25 @@ class DocumentListResponse(BaseModel):
 class HealthResponse(BaseModel):
     status: str
     qdrant: str
+
+
+# ---------------------------------------------------------------------------
+# GET /notebook/{id}/graph
+# ---------------------------------------------------------------------------
+
+class GraphNode(BaseModel):
+    id: str
+    label: str
+    type: str
+
+
+class GraphEdge(BaseModel):
+    source: str
+    target: str
+    relationship: str
+
+
+class GraphResponse(BaseModel):
+    nodes: list[GraphNode]
+    edges: list[GraphEdge]
+    notebook_id: str

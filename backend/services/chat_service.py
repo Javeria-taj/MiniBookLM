@@ -74,7 +74,7 @@ async def chat(req: ChatRequest) -> ChatResponse:
 
     # Generate answer
     try:
-        answer = await llm.answer_question(req.query, chunks, history)
+        answer = await llm.answer_question(req.query, chunks, history, req.audience_level)
     except Exception as exc:
         raise LLMError(f"LLM call failed: {exc}") from exc
 
