@@ -1,8 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
 //  MINIBOOK LM — API Layer
-//  All functions here are mock-first. To connect to the real
-//  backend, replace the mock logic inside each function body —
-//  the function signatures and return types stay the same.
+//  All functions talk directly to the real FastAPI backend.
+//  Base URL: process.env.NEXT_PUBLIC_API_URL
 // ═══════════════════════════════════════════════════════════════
 
 import type {
@@ -12,160 +11,191 @@ import type {
   GenerateResponse,
   StreamChunk,
   UserLevel,
+  MiniBookDocument,
+  DocType,
+  InsightsResponse,
+  GraphResponse,
+  MindmapResponse,
 } from './types';
-import {
-  MOCK_DOCS,
-  MOCK_RESPONSES,
-  MOCK_SUMMARIZE,
-  MOCK_EXPLAIN,
-  MOCK_QUIZ,
-  MOCK_NOTES,
-} from './mockData';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
 
-// ── Helpers ──────────────────────────────────────────────────────
-function delay(ms: number) {
-  return new Promise<void>((resolve) => setTimeout(resolve, ms));
+if (!API_BASE && typeof window !== 'undefined') {
+  console.warn('[api] NEXT_PUBLIC_API_URL is not set — all requests will fail.');
 }
 
-function pickRandom<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-// ── GET /documents ────────────────────────────────────────────────
-export async function fetchDocuments() {
-  if (API_BASE) {
-    const res = await fetch(`${API_BASE}/documents`);
-    if (!res.ok) throw new Error('Failed to fetch documents');
-    return res.json();
+// ── Internal helper ───────────────────────────────────────────────
+async function assertOk(res: Response, label: string): Promise<void> {
+  if (!res.ok) {
+    let detail = `${res.status} ${res.statusText}`;
+    try {
+      const body = await res.clone().json();
+      if (body?.detail) detail = body.detail;
+      else if (body?.error?.message) detail = body.error.message;
+    } catch { /* non-JSON error body — use status string */ }
+    throw new Error(`${label} failed: ${detail}`);
   }
-  await delay(400);
-  return MOCK_DOCS;
 }
 
-// ── POST /upload ─────────────────────────────────────────────────
-// FormData stub — your teammate hooks `POST /upload` here.
-export async function uploadDocument(
+// ── GET /notebook/{notebookId}/documents ─────────────────────────
+export async function fetchDocuments(
+  notebookId: string = 'default',
+): Promise<MiniBookDocument[]> {
+  const res = await fetch(`${API_BASE}/notebook/${notebookId}/documents`);
+  await assertOk(res, 'fetchDocuments');
+  const data = await res.json();
+
+  // Map backend DocumentInfo → MiniBookDocument
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data.documents ?? data).map((d: any): MiniBookDocument => ({
+    id:     d.doc_id ?? d.id,
+    name:   d.filename ?? d.name,
+    type:   ((d.filename ?? d.name ?? '').split('.').pop()?.toLowerCase() ?? 'pdf') as DocType,
+    size:   d.size ?? '—',
+    pages:  d.pages ?? 0,
+    tokens: d.chunk_count != null ? String(d.chunk_count) : (d.tokens ?? '—'),
+    date:   d.uploaded_at ?? d.date ?? 'Unknown',
+    active: false,
+  }));
+}
+
+// ── POST /ingest ──────────────────────────────────────────────────
+// Uses XMLHttpRequest so onProgress fires via xhr.upload.onprogress.
+export function uploadDocument(
   file: File,
-  onProgress: (pct: number) => void
+  onProgress?: (pct: number) => void,
+  notebookId: string = 'default',
 ): Promise<UploadResponse> {
-  if (API_BASE) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('notebook_id', notebookId);
 
-    const res = await fetch(`${API_BASE}/upload`, {
-      method: 'POST',
-      body: formData,
-    });
-    if (!res.ok) throw new Error('Upload failed');
-    return res.json();
-  }
+    xhr.open('POST', `${API_BASE}/ingest`);
 
-  // Mock progress simulation
-  return new Promise((resolve) => {
-    let pct = 0;
-    const tick = setInterval(() => {
-      pct = Math.min(pct + 8 + Math.random() * 12, 100);
-      onProgress(Math.round(pct));
-      if (pct >= 100) {
-        clearInterval(tick);
-        resolve({
-          doc_id: `doc_${Date.now()}`,
-          name: file.name,
-          pages: Math.floor(Math.random() * 20) + 5,
-          tokens: `${Math.floor(Math.random() * 15 + 5)}k`,
-        });
+    if (onProgress) {
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          onProgress(Math.round((e.loaded / e.total) * 100));
+        }
+      };
+    }
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          // Map IngestResponse { doc_id, chunk_count, filename } → UploadResponse
+          resolve({
+            doc_id: data.doc_id,
+            name:   data.filename ?? file.name,
+            pages:  0,
+            tokens: String(data.chunk_count ?? 0),
+          });
+        } catch {
+          reject(new Error('uploadDocument: invalid JSON response'));
+        }
+      } else {
+        let msg = `${xhr.status} ${xhr.statusText}`;
+        try {
+          const body = JSON.parse(xhr.responseText);
+          if (body?.detail) msg = body.detail;
+        } catch { /* ignore */ }
+        reject(new Error(`uploadDocument failed: ${msg}`));
       }
-    }, 80);
+    };
+
+    xhr.onerror = () => reject(new Error('uploadDocument: network error'));
+    xhr.onabort = () => reject(new Error('uploadDocument: aborted'));
+
+    xhr.send(formData);
   });
 }
 
-// ── POST /query (SSE streaming) ──────────────────────────────────
-// ReadableStream / SSE handler. When the real backend is ready,
-// remove the mock branch and the real SSE parsing takes over.
+// ── POST /chat ────────────────────────────────────────────────────
+// Backend returns full JSON (no SSE). We yield two chunks to
+// preserve the AsyncGenerator interface the store depends on.
 export async function* streamQuery(
   req: QueryRequest,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): AsyncGenerator<StreamChunk> {
-  if (API_BASE) {
-    const res = await fetch(`${API_BASE}/query`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(req),
-      signal,
-    });
-    if (!res.ok) throw new Error('Query failed');
-    if (!res.body) throw new Error('No response body');
+  const body = {
+    notebook_id:    req.doc_id,         // doc_id field used as notebook_id
+    query:          req.query,
+    history:        [],
+    audience_level: req.user_level,     // maps user_level → audience_level
+    doc_id:         null,
+  };
 
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
+  const res = await fetch(`${API_BASE}/chat`, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify(body),
+    signal,
+  });
+  await assertOk(res, 'streamQuery');
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() ?? '';
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          try {
-            const chunk: StreamChunk = JSON.parse(line.slice(6));
-            yield chunk;
-          } catch {
-            // malformed chunk — skip
-          }
-        }
-      }
-    }
-    yield { done: true };
-    return;
-  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data: any = await res.json();
 
-  // ── Mock SSE simulation ──────────────────────────────────────
-  await delay(700 + Math.random() * 500);
+  // Yield the answer text as a single token so the typewriter effect still works
+  yield { token: data.answer ?? '', done: false };
 
-  const levelResponses = MOCK_RESPONSES[req.user_level] as string[];
-  const fullText: string = Array.isArray(levelResponses)
-    ? pickRandom(levelResponses)
-    : (MOCK_RESPONSES.student as string[])[0];
+  // Map backend citations → Source[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sources = (data.citations ?? []).map((c: any) => ({
+    text:    c.text ?? '',
+    page:    c.page ?? 0,
+    docName: c.source ?? '',
+  }));
 
-  const chunkSize = 3;
-  for (let i = 0; i < fullText.length; i += chunkSize) {
-    if (signal?.aborted) return;
-    yield { token: fullText.slice(i, i + chunkSize) };
-    await delay(18);
-  }
   yield {
-    done: true,
-    sources: [
-      { text: 'Performance scales as a power law with model size…', page: 3, docName: 'Neural Scaling Laws.pdf' },
-      { text: 'The Transformer follows an encoder-decoder structure…', page: 2, docName: 'Attention Is All You Need.pdf' },
-    ],
+    done:             true,
+    sources,
+    retrieved_chunks: data.retrieved_chunks ?? [],
   };
 }
 
 // ── POST /generate ────────────────────────────────────────────────
+// Not yet implemented in the backend — kept for type compatibility.
 export async function generateContent(
   docId: string,
   type: QueryRequest['query'],
-  level: UserLevel
+  level: UserLevel,
 ): Promise<GenerateResponse> {
-  if (API_BASE) {
-    const res = await fetch(`${API_BASE}/generate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ doc_id: docId, type, user_level: level }),
-    });
-    if (!res.ok) throw new Error('Generate failed');
-    return res.json();
-  }
+  const res = await fetch(`${API_BASE}/generate`, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ doc_id: docId, type, user_level: level }),
+  });
+  await assertOk(res, 'generateContent');
+  return res.json();
+}
 
-  await delay(900 + Math.random() * 600);
+// ── GET /notebook/{notebookId}/insights ──────────────────────────
+export async function fetchInsights(
+  notebookId: string,
+): Promise<InsightsResponse> {
+  const res = await fetch(`${API_BASE}/notebook/${notebookId}/insights`);
+  await assertOk(res, 'fetchInsights');
+  return res.json();
+}
 
-  if (type === 'summarize') return { content: MOCK_SUMMARIZE };
-  if (type === 'explain')   return { content: MOCK_EXPLAIN };
-  if (type === 'quiz')      return { content: MOCK_QUIZ };
-  return { content: MOCK_NOTES };
+// ── GET /notebook/{notebookId}/graph ─────────────────────────────
+export async function fetchGraph(
+  notebookId: string,
+): Promise<GraphResponse> {
+  const res = await fetch(`${API_BASE}/notebook/${notebookId}/graph`);
+  await assertOk(res, 'fetchGraph');
+  return res.json();
+}
+
+// ── GET /notebook/{notebookId}/mindmap ───────────────────────────
+export async function fetchMindmap(
+  notebookId: string,
+): Promise<MindmapResponse> {
+  const res = await fetch(`${API_BASE}/notebook/${notebookId}/mindmap`);
+  await assertOk(res, 'fetchMindmap');
+  return res.json();
 }

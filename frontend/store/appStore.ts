@@ -49,6 +49,7 @@ interface AppState {
 
   // Citations
   citations: Citation[];
+  setCitations: (citations: Citation[]) => void;
 
   // Font size
   fontSize: 'sm' | 'md' | 'lg';
@@ -79,7 +80,13 @@ export const useAppStore = create<AppState>((set) => ({
   // Documents
   documents: MOCK_DOCS,
   setDocuments: (docs) => set({ documents: docs }),
-  addDocument: (doc) => set((s) => ({ documents: [...s.documents, doc] })),
+  addDocument: (doc) =>
+    set((s) => ({
+      documents: [
+        ...s.documents.map((d) => ({ ...d, active: false })),
+        { ...doc, active: true },
+      ],
+    })),
   removeDocument: (id) =>
     set((s) => ({ documents: s.documents.filter((d) => d.id !== id) })),
   setActiveDocument: (id) =>
@@ -119,6 +126,7 @@ export const useAppStore = create<AppState>((set) => ({
 
   // Citations
   citations: MOCK_CITATIONS,
+  setCitations: (citations) => set({ citations }),
 
   // Font size
   fontSize: 'md',
