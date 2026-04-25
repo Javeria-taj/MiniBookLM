@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { ChevronRight, ChevronDown } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
-import { fetchInsights } from '@/lib/api';
+import { fetchInsights, fetchMindmap } from '@/lib/api';
+import type { MindmapNode } from '@/lib/types';
 import { MOCK_GRAPH_NODES, MOCK_GRAPH_EDGES } from '@/lib/mockData';
 
 function KnowledgeGraph({ active }: { active: boolean }) {
@@ -216,6 +218,167 @@ function NotesTab() {
 }
 
 
+// ── Mindmap recursive node ────────────────────────────────────
+function MindmapNodeComponent({ node, depth }: { node: MindmapNode; depth: number }) {
+  const isRoot = depth === 0;
+  const isLeaf = !node.children || node.children.length === 0;
+  const [open, setOpen] = useState(true);
+
+  const nodeStyle: React.CSSProperties = isRoot
+    ? {
+        display: 'inline-flex', alignItems: 'center', gap: 6,
+        padding: '8px 16px', border: 'var(--border-accent)',
+        background: 'var(--accent-subtle)', color: 'var(--accent)',
+        fontFamily: 'var(--font-display)', fontSize: '1rem', fontWeight: 700,
+        cursor: isLeaf ? 'default' : 'pointer',
+        boxShadow: 'var(--shadow-accent)', transition: 'var(--transition)',
+      }
+    : depth === 1
+    ? {
+        display: 'inline-flex', alignItems: 'center', gap: 6,
+        padding: '6px 12px',
+        borderLeft: '3px solid var(--accent)',
+        background: 'var(--bg-elevated)',
+        color: 'var(--text-primary)',
+        fontFamily: 'var(--font-mono)', fontSize: '0.88rem', fontWeight: 700,
+        cursor: isLeaf ? 'default' : 'pointer',
+        boxShadow: 'var(--shadow-sm)', transition: 'var(--transition)',
+      }
+    : {
+        display: 'inline-flex', alignItems: 'center', gap: 6,
+        padding: '4px 10px',
+        borderLeft: '2px dashed var(--text-muted)',
+        background: 'none',
+        color: 'var(--text-secondary)',
+        fontFamily: 'var(--font-mono)', fontSize: '0.8rem', fontWeight: 400,
+        cursor: 'default',
+      };
+
+  return (
+    <div style={{ paddingLeft: isRoot ? 0 : 20 * depth, paddingTop: 6, paddingBottom: 2 }}>
+      <div
+        style={nodeStyle}
+        onClick={() => { if (!isLeaf) setOpen(o => !o); }}
+        role={isLeaf ? undefined : 'button'}
+        aria-expanded={isLeaf ? undefined : open}
+      >
+        {!isLeaf && (
+          open
+            ? <ChevronDown size={13} style={{ flexShrink: 0 }} />
+            : <ChevronRight size={13} style={{ flexShrink: 0 }} />
+        )}
+        {node.label}
+      </div>
+
+      {/* Animated children */}
+      {!isLeaf && (
+        <div style={{
+          overflow: 'hidden',
+          maxHeight: open ? 9999 : 0,
+          transition: 'max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
+        }}>
+          {node.children.map(child => (
+            <MindmapNodeComponent key={child.id} node={child} depth={depth + 1} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MindmapTab() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [root, setRoot] = useState<MindmapNode | null>(null);
+
+  const loadMindmap = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await fetchMindmap('default-notebook');
+      setRoot(data.root);
+    } catch (e) {
+      setError((e as Error).message || 'Could not load mindmap');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { loadMindmap(); }, [loadMindmap]);
+
+  // ── Skeleton (3-level tree shimmer) ──
+  const SkeletonTree = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      {/* Root */}
+      <div className="skeleton-line" style={{ width: '55%', height: 32, marginBottom: 8 }} />
+      {/* Branch 1 + leaves */}
+      <div style={{ paddingLeft: 20 }}>
+        <div className="skeleton-line" style={{ width: '65%', height: 22, marginBottom: 6 }} />
+        <div style={{ paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 5 }}>
+          <div className="skeleton-line" style={{ width: '70%', height: 14 }} />
+          <div className="skeleton-line" style={{ width: '50%', height: 14 }} />
+        </div>
+      </div>
+      {/* Branch 2 + leaves */}
+      <div style={{ paddingLeft: 20, marginTop: 4 }}>
+        <div className="skeleton-line" style={{ width: '60%', height: 22, marginBottom: 6 }} />
+        <div style={{ paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 5 }}>
+          <div className="skeleton-line" style={{ width: '75%', height: 14 }} />
+          <div className="skeleton-line" style={{ width: '45%', height: 14 }} />
+          <div className="skeleton-line" style={{ width: '60%', height: 14 }} />
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+        <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>CONCEPT MAP</h3>
+        <button
+          onClick={loadMindmap}
+          disabled={loading}
+          style={{ background: 'none', border: 'none', color: loading ? 'var(--accent)' : 'var(--text-secondary)', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', cursor: loading ? 'not-allowed' : 'pointer', fontWeight: 700, transition: 'var(--transition)' }}
+        >
+          {loading ? 'LOADING...' : 'REFRESH'}
+        </button>
+      </div>
+
+      {/* Skeleton */}
+      {loading && <SkeletonTree />}
+
+      {/* Error */}
+      {!loading && error && (
+        <div style={{ padding: 20, border: '2px solid #C9705A', background: 'rgba(201,112,90,0.08)', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', color: '#C9705A', fontWeight: 700 }}>COULD NOT LOAD MINDMAP</p>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>{error}</p>
+          <button
+            onClick={loadMindmap}
+            style={{ padding: '8px 16px', border: '2px solid #C9705A', background: 'rgba(201,112,90,0.15)', color: '#C9705A', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 700 }}
+          >
+            RETRY
+          </button>
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!loading && !error && !root && (
+        <div style={{ padding: '32px 20px', textAlign: 'center', border: '2px dashed var(--border-strong)', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', color: 'var(--text-secondary)', fontWeight: 700 }}>NO MINDMAP YET</p>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>Upload a document to generate the mindmap.</p>
+        </div>
+      )}
+
+      {/* Tree */}
+      {!loading && !error && root && (
+        <div style={{ border: 'var(--border-heavy)', background: 'var(--bg-elevated)', padding: '16px', boxShadow: 'var(--shadow-sm)', overflowX: 'auto' }}>
+          <MindmapNodeComponent node={root} depth={0} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function CitationsTab() {
   const { citations } = useAppStore();
   const [copied, setCopied] = useState<string | null>(null);
@@ -265,6 +428,7 @@ export default function RightPanel() {
     { key: 'notes',     label: 'NOTES' },
     { key: 'graph',     label: 'GRAPH' },
     { key: 'citations', label: 'CITATIONS' },
+    { key: 'mindmap',  label: 'MINDMAP' },
   ];
 
   return (
@@ -294,6 +458,7 @@ export default function RightPanel() {
         {activeTab === 'notes'     && <NotesTab />}
         {activeTab === 'graph'     && <KnowledgeGraph active={activeTab === 'graph'} />}
         {activeTab === 'citations' && <CitationsTab />}
+        {activeTab === 'mindmap'   && <MindmapTab />}
       </div>
     </aside>
   );

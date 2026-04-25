@@ -421,6 +421,7 @@ export default function ChatPanel() {
                 onSaveNote={(n) => {
                   addNote({ id: crypto.randomUUID(), tag: 'insight', text: n });
                   setActiveTab('notes');
+                  showToast('Insight saved to Notes ✓', 'success');
                 }}
               />
           )

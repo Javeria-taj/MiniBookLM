@@ -4,6 +4,7 @@ import { Sun, Moon, Settings, Menu } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import { useEffect } from 'react';
 import Link from 'next/link';
+import Tooltip from '@/components/ui/Tooltip';
 
 export default function Navbar({
   onOpenSettings,
@@ -38,19 +39,21 @@ export default function Navbar({
     >
       {/* Left */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0 }}>
-        <button
-          onClick={toggleSidebar}
-          style={{
-            background: 'var(--bg-elevated)', border: 'var(--border-heavy)',
-            cursor: 'pointer', padding: '6px 10px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)',
-            transition: 'var(--transition)',
-            boxShadow: 'var(--shadow-sm)',
-          }}
-          className="brutal-btn-hover"
-        >
-          <Menu size={18} />
-        </button>
+        <Tooltip label="Toggle Sidebar" position="bottom">
+          <button
+            onClick={toggleSidebar}
+            style={{
+              background: 'var(--bg-elevated)', border: 'var(--border-heavy)',
+              cursor: 'pointer', padding: '6px 10px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)',
+              transition: 'var(--transition)',
+              boxShadow: 'var(--shadow-sm)',
+            }}
+            className="brutal-btn-hover"
+          >
+            <Menu size={18} />
+          </button>
+        </Tooltip>
 
         <a href="#" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
           <div style={{
@@ -99,43 +102,49 @@ export default function Navbar({
 
       {/* Right */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-        <button
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          style={{
-            width: 38, height: 38,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'var(--bg-elevated)', border: 'var(--border-heavy)',
-            color: 'var(--text-primary)', cursor: 'pointer', transition: 'var(--transition)',
-            boxShadow: 'var(--shadow-sm)',
-          }}
-          className="brutal-btn-hover"
-        >
-          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-        </button>
+        <Tooltip label={theme === 'dark' ? 'Switch to Light' : 'Switch to Dark'} position="bottom">
+          <button
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            style={{
+              width: 38, height: 38,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'var(--bg-elevated)', border: 'var(--border-heavy)',
+              color: 'var(--text-primary)', cursor: 'pointer', transition: 'var(--transition)',
+              boxShadow: 'var(--shadow-sm)',
+            }}
+            className="brutal-btn-hover"
+          >
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
+        </Tooltip>
 
-        <button
-          onClick={onOpenSettings}
-          style={{
-            width: 38, height: 38,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'var(--bg-elevated)', border: 'var(--border-heavy)',
-            color: 'var(--text-primary)', cursor: 'pointer', transition: 'var(--transition)',
-            boxShadow: 'var(--shadow-sm)',
-          }}
-          className="brutal-btn-hover"
-        >
-          <Settings size={16} />
-        </button>
+        <Tooltip label="System Config" position="bottom">
+          <button
+            onClick={onOpenSettings}
+            style={{
+              width: 38, height: 38,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'var(--bg-elevated)', border: 'var(--border-heavy)',
+              color: 'var(--text-primary)', cursor: 'pointer', transition: 'var(--transition)',
+              boxShadow: 'var(--shadow-sm)',
+            }}
+            className="brutal-btn-hover"
+          >
+            <Settings size={16} />
+          </button>
+        </Tooltip>
 
-        <div style={{
-          width: 38, height: 38,
-          background: 'var(--accent)', border: 'var(--border-accent)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '0.85rem', fontWeight: 900, color: 'var(--text-on-accent)', cursor: 'pointer',
-          boxShadow: 'var(--shadow-sm)',
-        }}>
-          JV
-        </div>
+        <Tooltip label="Your Profile" position="bottom">
+          <div style={{
+            width: 38, height: 38,
+            background: 'var(--accent)', border: 'var(--border-accent)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '0.85rem', fontWeight: 900, color: 'var(--text-on-accent)', cursor: 'pointer',
+            boxShadow: 'var(--shadow-sm)',
+          }}>
+            JV
+          </div>
+        </Tooltip>
       </div>
 
       <style jsx>{`

@@ -23,8 +23,8 @@ interface AppState {
   toggleSidebar: () => void;
 
   // Active right panel tab
-  activeTab: 'notes' | 'graph' | 'citations';
-  setActiveTab: (tab: 'notes' | 'graph' | 'citations') => void;
+  activeTab: 'notes' | 'graph' | 'citations' | 'mindmap';
+  setActiveTab: (tab: 'notes' | 'graph' | 'citations' | 'mindmap') => void;
 
   // Documents
   documents: MiniBookDocument[];

@@ -1,11 +1,20 @@
 'use client';
 
 import { X } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAppStore } from '@/store/appStore';
+import ConfirmModal from './ConfirmModal';
+import Toast from './Toast';
 
 export default function SettingsModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void; }) {
   const { theme, setTheme, fontSize, setFontSize, clearMessages, setDocuments, setNotes } = useAppStore();
+  const [showWipeConfirm, setShowWipeConfirm] = useState(false);
+  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' | 'info' } | null>(null);
+
+  const showToast = (msg: string, type: 'success' | 'error' | 'info') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   // Apply font size to root html element whenever it changes
   useEffect(() => {
@@ -15,13 +24,13 @@ export default function SettingsModal({ isOpen, onClose }: { isOpen: boolean; on
 
   if (!isOpen) return null;
 
-  const handleWipeAll = () => {
-    if (window.confirm('This will permanently delete all documents, messages, and notes. Are you sure?')) {
-      clearMessages();
-      setDocuments([]);
-      setNotes([]);
-      onClose();
-    }
+  const handleWipeConfirmed = () => {
+    clearMessages();
+    setDocuments([]);
+    setNotes([]);
+    setShowWipeConfirm(false);
+    showToast('All data wiped successfully.', 'success');
+    setTimeout(onClose, 1500);
   };
 
   return (
@@ -66,7 +75,7 @@ export default function SettingsModal({ isOpen, onClose }: { isOpen: boolean; on
             <div style={{ padding: '16px', border: '2px solid rgba(201, 112, 90, 0.4)', background: 'rgba(201, 112, 90, 0.05)', textAlign: 'center', boxShadow: '4px 4px 0 rgba(201, 112, 90, 0.15)' }}>
               <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: '#C9705A', marginBottom: 12, fontWeight: 700 }}>DANGER ZONE</p>
               <button
-                onClick={handleWipeAll}
+                onClick={() => setShowWipeConfirm(true)}
                 style={{ padding: '8px 16px', border: '2px solid #C9705A', background: 'rgba(201, 112, 90, 0.15)', color: '#C9705A', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', cursor: 'pointer', transition: 'var(--transition)', fontWeight: 700, boxShadow: '2px 2px 0 rgba(201, 112, 90, 0.4)' }}
                 className="danger-btn"
               >
@@ -82,6 +91,22 @@ export default function SettingsModal({ isOpen, onClose }: { isOpen: boolean; on
         .danger-btn:hover { background: rgba(201, 112, 90, 0.25); transform: translate(-2px, -2px); box-shadow: 4px 4px 0 rgba(201, 112, 90, 0.4) !important; }
         .danger-btn:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 rgba(201, 112, 90, 0.4) !important; }
       `}</style>
+
+      {/* Wipe confirm popup */}
+      {showWipeConfirm && (
+        <ConfirmModal
+          title="WIPE ALL DATA"
+          message="This will permanently delete all documents, messages, and notes. This action cannot be undone."
+          confirmLabel="YES, WIPE EVERYTHING"
+          cancelLabel="CANCEL"
+          danger
+          onConfirm={handleWipeConfirmed}
+          onCancel={() => setShowWipeConfirm(false)}
+        />
+      )}
+
+      {/* Toast */}
+      {toast && <Toast message={toast.msg} type={toast.type} />}
     </div>
   );
 }
