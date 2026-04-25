@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
 //  MINIBOOK LM — Shared TypeScript Interfaces
-//  Share these with the backend team immediately — these are the
-//  API contract types that both sides must agree on.
+//  Single source of truth for the API contract.
+//  Never remove existing interfaces — only add.
 // ═══════════════════════════════════════════════════════════════
 
 export type UserLevel = 'beginner' | 'student' | 'expert';
@@ -81,7 +81,6 @@ export interface GraphEdge {
 
 // ══════════════════════════════════════════════════════════════
 //  API REQUEST / RESPONSE CONTRACTS
-//  These are the typed shapes your teammate's backend must match.
 // ══════════════════════════════════════════════════════════════
 
 /** POST /upload */
@@ -124,9 +123,47 @@ export interface ApiError {
   code?: number;
 }
 
-/** Streaming chunk (SSE) */
+/** Streaming chunk (SSE / simulated) */
+export interface RetrievedChunk {
+  text: string;
+  source: string;
+  page: number;
+  similarity_score: number;
+  used_in_answer: boolean;
+}
+
 export interface StreamChunk {
   token?: string;
   done?: boolean;
   sources?: Source[];
+  retrieved_chunks?: RetrievedChunk[];
+}
+
+// ── Insights ─────────────────────────────────────────────────────
+/** GET /notebook/{id}/insights */
+export interface InsightsResponse {
+  summary: string;
+  key_topics: string[];
+  suggested_questions: string[];
+}
+
+// ── Knowledge Graph ───────────────────────────────────────────────
+/** GET /notebook/{id}/graph */
+export interface GraphResponse {
+  nodes: Omit<GraphNode, 'x' | 'y'>[];   // backend doesn't return coords; canvas assigns them
+  edges: GraphEdge[];
+  notebook_id: string;
+}
+
+// ── Mindmap ───────────────────────────────────────────────────────
+/** GET /notebook/{id}/mindmap */
+export interface MindmapNode {
+  id: string;
+  label: string;
+  children: MindmapNode[];
+}
+
+export interface MindmapResponse {
+  root: MindmapNode;
+  notebook_id: string;
 }
