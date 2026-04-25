@@ -3,6 +3,7 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/store/appStore';
+import { fetchInsights } from '@/lib/api';
 import { MOCK_GRAPH_NODES, MOCK_GRAPH_EDGES } from '@/lib/mockData';
 
 function KnowledgeGraph({ active }: { active: boolean }) {
@@ -77,7 +78,8 @@ function KnowledgeGraph({ active }: { active: boolean }) {
 
 function NotesTab() {
   const { notes, addNote, setNotes } = useAppStore();
-  const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [addingNote, setAddingNote] = useState(false);
   const [newText, setNewText] = useState('');
   const [newTag, setNewTag] = useState<'insight' | 'tip' | 'warning'>('insight');
@@ -88,11 +90,26 @@ function NotesTab() {
     warning: { bg: 'rgba(201, 112, 90, 0.15)',  color: '#C9705A', border: '#C9705A' },
   };
 
-  const handleRefresh = () => {
-    setRefreshing(true);
-    setNotes([...notes].sort(() => Math.random() - 0.5));
-    setTimeout(() => setRefreshing(false), 600);
-  };
+  const loadInsights = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await fetchInsights('default-notebook');
+      const mapped: import('@/lib/types').Note[] = [
+        { id: crypto.randomUUID(), tag: 'insight', text: data.summary },
+        ...data.key_topics.map(t => ({ id: crypto.randomUUID(), tag: 'tip' as const, text: t })),
+        ...data.suggested_questions.map(q => ({ id: crypto.randomUUID(), tag: 'warning' as const, text: q })),
+      ];
+      setNotes(mapped);
+    } catch (e) {
+      setError((e as Error).message || 'Could not load insights');
+    } finally {
+      setLoading(false);
+    }
+  }, [setNotes]);
+
+  // Fetch on mount
+  useEffect(() => { loadInsights(); }, [loadInsights]);
 
   const handleAddNote = () => {
     if (!newText.trim()) return;
@@ -106,14 +123,42 @@ function NotesTab() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
         <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>INSIGHT FEED</h3>
         <button
-          onClick={handleRefresh}
-          style={{ background: 'none', border: 'none', color: refreshing ? 'var(--accent)' : 'var(--text-secondary)', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 700, transition: 'var(--transition)' }}
+          onClick={loadInsights}
+          disabled={loading}
+          style={{ background: 'none', border: 'none', color: loading ? 'var(--accent)' : 'var(--text-secondary)', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', cursor: loading ? 'not-allowed' : 'pointer', fontWeight: 700, transition: 'var(--transition)' }}
         >
-          {refreshing ? 'SHUFFLING...' : 'REFRESH'}
+          {loading ? 'LOADING...' : 'REFRESH'}
         </button>
       </div>
 
-      {notes.map(n => {
+      {/* Skeleton loader */}
+      {loading && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {[80, 60, 90].map((w, i) => (
+            <div key={i} style={{ padding: 16, border: 'var(--border-heavy)', background: 'var(--bg-elevated)' }}>
+              <div className="skeleton-line" style={{ width: '30%', marginBottom: 10 }} />
+              <div className="skeleton-line" style={{ width: `${w}%` }} />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Error state */}
+      {!loading && error && (
+        <div style={{ padding: 20, border: '2px solid #C9705A', background: 'rgba(201,112,90,0.08)', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', color: '#C9705A', fontWeight: 700 }}>COULD NOT LOAD INSIGHTS</p>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>{error}</p>
+          <button
+            onClick={loadInsights}
+            style={{ padding: '8px 16px', border: '2px solid #C9705A', background: 'rgba(201,112,90,0.15)', color: '#C9705A', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 700 }}
+          >
+            RETRY
+          </button>
+        </div>
+      )}
+
+      {/* Notes list */}
+      {!loading && !error && notes.map(n => {
         const s = tagStyles[n.tag] || tagStyles.insight;
         return (
           <div key={n.id} style={{ padding: '16px', border: 'var(--border-heavy)', background: 'var(--bg-elevated)', position: 'relative', boxShadow: 'var(--shadow-sm)' }}>
@@ -125,7 +170,8 @@ function NotesTab() {
         );
       })}
 
-      {addingNote ? (
+      {/* Add manual note */}
+      {!loading && !error && (addingNote ? (
         <div style={{ border: 'var(--border-accent)', background: 'var(--bg-elevated)', padding: 16, display: 'flex', flexDirection: 'column', gap: 10, boxShadow: 'var(--shadow-accent)' }}>
           <div style={{ display: 'flex', gap: 6 }}>
             {(['insight', 'tip', 'warning'] as const).map(t => (
@@ -163,11 +209,12 @@ function NotesTab() {
         >
           + ADD MANUAL ENTRY
         </button>
-      )}
+      ))}
       <style jsx>{`.add-note-btn:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--accent); }`}</style>
     </div>
   );
 }
+
 
 function CitationsTab() {
   const { citations } = useAppStore();
