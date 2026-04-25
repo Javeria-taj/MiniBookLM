@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useCallback, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/store/appStore';
 import { MOCK_GRAPH_NODES, MOCK_GRAPH_EDGES } from '@/lib/mockData';
 
@@ -211,6 +212,7 @@ function CitationsTab() {
 }
 
 export default function RightPanel() {
+  const router = useRouter();
   const { activeTab, setActiveTab } = useAppStore();
   const tabs: { key: typeof activeTab; label: string }[] = [
     { key: 'notes',     label: 'NOTES' },
@@ -222,14 +224,21 @@ export default function RightPanel() {
     <aside style={{ width: 'var(--right-panel-w)', flexShrink: 0, display: 'flex', flexDirection: 'column', background: 'var(--bg-surface)', borderLeft: 'var(--border-heavy)' }}>
       <div style={{ display: 'flex', borderBottom: 'var(--border-heavy)', padding: '12px 16px 0', gap: 4 }}>
         {tabs.map(t => (
-          <button key={t.key} onClick={() => setActiveTab(t.key)} style={{
-            padding: '8px 10px', border: 'none',
-            borderBottom: activeTab === t.key ? '2px solid var(--accent)' : '2px solid transparent',
-            background: 'none',
-            color: activeTab === t.key ? 'var(--accent)' : 'var(--text-secondary)',
-            fontFamily: 'var(--font-mono)', fontSize: '0.75rem', fontWeight: 700,
-            cursor: 'pointer', transition: 'var(--transition)',
-          }}>
+          <button
+            key={t.key}
+            onClick={() => {
+              if (t.key === 'graph') { router.push('/mindmap'); return; }
+              setActiveTab(t.key);
+            }}
+            style={{
+              padding: '8px 10px', border: 'none',
+              borderBottom: activeTab === t.key ? '2px solid var(--accent)' : '2px solid transparent',
+              background: 'none',
+              color: activeTab === t.key ? 'var(--accent)' : 'var(--text-secondary)',
+              fontFamily: 'var(--font-mono)', fontSize: '0.75rem', fontWeight: 700,
+              cursor: 'pointer', transition: 'var(--transition)',
+            }}
+          >
             {t.label}
           </button>
         ))}

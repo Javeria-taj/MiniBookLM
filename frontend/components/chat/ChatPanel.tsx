@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Send } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import { streamQuery } from '@/lib/api';
@@ -234,6 +235,7 @@ function MessageBubble({ msg, onSaveNote }: { msg: Message; onSaveNote: (text: s
 }
 
 export default function ChatPanel() {
+  const router = useRouter();
   const { messages, addMessage, updateLastAIMessage, finalizeLastAIMessage, clearMessages, isLoading, setLoading, level, addNote, setActiveTab } = useAppStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState('');
@@ -265,11 +267,9 @@ export default function ChatPanel() {
   };
 
   const handleAction = (action: string) => {
-    if (action === 'quiz') {
-      setQuizData(MOCK_QUIZ);
-      addMessage({ id: crypto.randomUUID(), role: 'ai', content: '__QUIZ__', timestamp: new Date() });
-      return;
-    }
+    if (action === 'flashcards') { router.push('/flashcards'); return; }
+    if (action === 'quiz')       { router.push('/quiz');       return; }
+    if (action === 'mindmap')    { router.push('/mindmap');    return; }
     sendMessage(`Generate a ${action}`);
   };
 
@@ -278,7 +278,7 @@ export default function ChatPanel() {
       {toast && <Toast message={toast.msg} type={toast.type} />}
 
       <div style={{ display: 'flex', gap: 10, padding: '12px 20px', borderBottom: 'var(--border-heavy)', background: 'var(--bg-surface)', overflowX: 'auto' }}>
-        {['Summarize', 'Explain', 'Quiz', 'Mindmap'].map(a => (
+        {['Summarize', 'Explain', 'Flashcards', 'Quiz', 'Mindmap'].map(a => (
           <button key={a} onClick={() => handleAction(a.toLowerCase())} style={{
             padding: '6px 14px', border: '2px solid rgba(196, 139, 32, 0.4)', 
             background: 'var(--accent-subtle)', color: 'var(--accent)',

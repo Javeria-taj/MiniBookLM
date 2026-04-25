@@ -1,8 +1,9 @@
 'use client';
 
-import { Sun, Moon, Settings, ChevronDown, Menu } from 'lucide-react';
+import { Sun, Moon, Settings, Menu } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import { useEffect } from 'react';
+import Link from 'next/link';
 
 export default function Navbar({
   onOpenSettings,
@@ -72,7 +73,7 @@ export default function Navbar({
       </div>
 
       {/* Center: Level Toggle */}
-      <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+      <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <div style={{
           display: 'flex', background: 'var(--bg-base)', border: 'var(--border-heavy)',
           padding: 4, gap: 4, boxShadow: 'var(--shadow-sm)',
@@ -140,6 +141,7 @@ export default function Navbar({
       <style jsx>{`
         .brutal-btn-hover:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 rgba(122, 127, 148, 0.4); }
         .brutal-btn-hover:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 rgba(122, 127, 148, 0.4); }
+        .nav-page-link:hover { background: var(--bg-hover) !important; color: var(--accent) !important; transform: translate(-2px, -2px); box-shadow: 3px 3px 0 rgba(196,139,32,0.35); }
       `}</style>
     </nav>
   );
