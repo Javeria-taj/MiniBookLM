@@ -1,0 +1,254 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.root{padding:1.5rem 0}
+.section-label{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-secondary);margin-bottom:.75rem}
+.verdict-card{background:var(--color-background-primary);border:2px solid #C48B20;border-radius:16px;padding:1.25rem 1.5rem;margin-bottom:1.5rem}
+.verdict-title{font-size:16px;font-weight:500;color:var(--color-text-primary);margin-bottom:.4rem}
+.verdict-body{font-size:13px;color:var(--color-text-secondary);line-height:1.65}
+.verdict-tag{display:inline-block;background:#FAEEDA;color:#633806;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;margin-bottom:.6rem}
+
+.compare-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:1.5rem}
+.dir-card{border-radius:14px;overflow:hidden;border:1.5px solid var(--color-border-secondary)}
+.dir-card.winner{border-color:#C48B20;border-width:2px}
+.dir-preview{height:130px;display:flex;flex-direction:column;gap:5px;padding:12px;position:relative}
+.dir-preview.brutalist{background:#0D0D0D}
+.dir-preview.glassy{background:linear-gradient(135deg,#1a1040 0%,#0d1f3c 100%)}
+.dir-preview.lumina{background:#11131A}
+.winner-badge{position:absolute;top:8px;right:8px;background:#C48B20;color:#1A1200;font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;letter-spacing:.06em}
+
+.mock-nav{height:16px;border-radius:4px;margin-bottom:6px}
+.brutalist .mock-nav{background:#1A1A1A;border:1.5px solid #E8FF00}
+.glassy .mock-nav{background:rgba(255,255,255,.08);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.15)}
+.lumina .mock-nav{background:#1C1F28;border:1px solid rgba(255,255,255,.08)}
+
+.mock-row{display:flex;gap:5px}
+.mock-sidebar{width:28%;display:flex;flex-direction:column;gap:4px}
+.mock-main{flex:1;display:flex;flex-direction:column;gap:4px}
+.mock-right{width:26%;display:flex;flex-direction:column;gap:4px}
+.mock-block{border-radius:3px;height:10px}
+.mock-block.tall{height:50px}
+
+.brutalist .mock-block{background:#1C1C1C;border:1px solid #333}
+.brutalist .mock-block.accent{background:#E8A838;border:none}
+.brutalist .mock-block.accent2{background:#FF3B3B;border:none}
+.brutalist .mock-block.btn{background:transparent;border:2px solid #E8FF00;height:14px}
+
+.glassy .mock-block{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)}
+.glassy .mock-block.accent{background:rgba(120,80,220,.6);border:1px solid rgba(160,120,255,.4)}
+.glassy .mock-block.accent2{background:rgba(60,160,240,.4);border:1px solid rgba(80,180,255,.3)}
+.glassy .mock-block.btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25)}
+
+.lumina .mock-block{background:#1E2230;border:1px solid rgba(255,255,255,.07)}
+.lumina .mock-block.accent{background:rgba(194,138,52,.25);border:1px solid rgba(194,138,52,.4)}
+.lumina .mock-block.accent2{background:rgba(100,180,140,.18);border:1px solid rgba(100,180,140,.3)}
+.lumina .mock-block.btn{background:rgba(194,138,52,.15);border:1.5px solid #C48B20;height:14px;border-radius:20px}
+
+.dir-info{padding:10px 12px;background:var(--color-background-secondary)}
+.dir-name{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:3px}
+.dir-tag-row{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px}
+.dtag{font-size:10px;padding:2px 6px;border-radius:8px}
+.dtag-go{background:#EAF3DE;color:#3B6D11}
+.dtag-no{background:#FCEBEB;color:#A32D2D}
+.dtag-mid{background:#FAEEDA;color:#854F0B}
+.dir-desc{font-size:11.5px;color:var(--color-text-secondary);line-height:1.5}
+
+.palette-section{margin-bottom:1.5rem}
+.palette-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.swatch-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:12px;overflow:hidden}
+.swatch-block{height:52px;width:100%}
+.swatch-info{padding:8px 10px}
+.swatch-name{font-size:12px;font-weight:500;color:var(--color-text-primary)}
+.swatch-hex{font-size:11px;color:var(--color-text-secondary);font-family:var(--font-mono)}
+.swatch-role{font-size:10.5px;color:var(--color-text-tertiary);margin-top:2px}
+
+.token-table{width:100%;border-collapse:collapse;margin-bottom:1.5rem}
+.token-table th{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-align:left;padding:6px 8px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.token-table td{font-size:12px;color:var(--color-text-primary);padding:7px 8px;border-bottom:0.5px solid var(--color-border-tertiary);vertical-align:top;line-height:1.5}
+.token-table td:first-child{font-weight:500;color:var(--color-text-secondary);width:28%}
+.token-table td code{font-family:var(--font-mono);font-size:11px;background:var(--color-background-secondary);padding:1px 5px;border-radius:3px}
+.token-table tr:last-child td{border-bottom:none}
+
+.dopamine-bar-section{margin-bottom:1.5rem}
+.dopamine-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.dopamine-label{font-size:12px;color:var(--color-text-secondary);min-width:130px}
+.dbar-track{flex:1;height:8px;background:var(--color-background-secondary);border-radius:4px;overflow:hidden;border:0.5px solid var(--color-border-tertiary)}
+.dbar-fill{height:100%;border-radius:4px}
+.dbar-pct{font-size:12px;font-weight:500;color:var(--color-text-primary);min-width:32px;text-align:right}
+.zone-label{font-size:11px;color:var(--color-text-tertiary);margin-top:-4px;margin-bottom:8px;margin-left:140px}
+</style>
+
+<div class="root">
+<h2 style="position:absolute;width:1px;height:1px;overflow:hidden">Design direction comparison for Lumina AI workspace</h2>
+
+<div class="verdict-card">
+  <div class="verdict-tag">Recommended direction</div>
+  <div class="verdict-title">Soft Brutalism — Neo-brutalist structure, muted tonal palette</div>
+  <div class="verdict-body">Keep the bold borders and grid personality of neo-brutalism — that's your identity and what makes Lumina feel distinct from every other glassmorphism tool. Strip out the full-saturation colors and harsh whites. Darken the backgrounds to a warm near-black, replace neon with dusty amber and sage, and let the brutalist geometry breathe through subtle contrast rather than screaming contrast. The result: recognisably your app, but liveable for hours.</div>
+</div>
+
+<p class="section-label">Three directions compared</p>
+<div class="compare-grid">
+  <div class="dir-card">
+    <div class="dir-preview brutalist">
+      <div class="mock-nav"></div>
+      <div class="mock-row">
+        <div class="mock-sidebar">
+          <div class="mock-block accent2"></div>
+          <div class="mock-block"></div>
+          <div class="mock-block"></div>
+        </div>
+        <div class="mock-main">
+          <div class="mock-block btn"></div>
+          <div class="mock-block tall"></div>
+          <div class="mock-block accent"></div>
+        </div>
+        <div class="mock-right">
+          <div class="mock-block accent2"></div>
+          <div class="mock-block"></div>
+          <div class="mock-block"></div>
+        </div>
+      </div>
+    </div>
+    <div class="dir-info">
+      <div class="dir-name">Pure neo-brutalism</div>
+      <div class="dir-tag-row"><span class="dtag dtag-no">Eye strain</span><span class="dtag dtag-no">Fatiguing</span></div>
+      <div class="dir-desc">What you have now. Bold, aggressive, memorable — but hostile for sustained use. Full saturation colors clash and vibrate.</div>
+    </div>
+  </div>
+
+  <div class="dir-card">
+    <div class="dir-preview glassy">
+      <div class="mock-nav"></div>
+      <div class="mock-row">
+        <div class="mock-sidebar">
+          <div class="mock-block accent2"></div>
+          <div class="mock-block"></div>
+          <div class="mock-block"></div>
+        </div>
+        <div class="mock-main">
+          <div class="mock-block btn"></div>
+          <div class="mock-block tall"></div>
+          <div class="mock-block accent"></div>
+        </div>
+        <div class="mock-right">
+          <div class="mock-block accent"></div>
+          <div class="mock-block"></div>
+          <div class="mock-block"></div>
+        </div>
+      </div>
+    </div>
+    <div class="dir-info">
+      <div class="dir-name">Pure glassmorphism</div>
+      <div class="dir-tag-row"><span class="dtag dtag-no">Generic</span><span class="dtag dtag-mid">Soft but boring</span></div>
+      <div class="dir-desc">Beautiful at rest, hard to scan when full of content. Loses all the personality that makes Lumina distinct. Looks like every Notion clone.</div>
+    </div>
+  </div>
+
+  <div class="dir-card winner">
+    <div class="dir-preview lumina">
+      <div class="winner-badge">Pick this</div>
+      <div class="mock-nav"></div>
+      <div class="mock-row">
+        <div class="mock-sidebar">
+          <div class="mock-block accent"></div>
+          <div class="mock-block"></div>
+          <div class="mock-block"></div>
+        </div>
+        <div class="mock-main">
+          <div class="mock-block btn"></div>
+          <div class="mock-block tall"></div>
+          <div class="mock-block accent2"></div>
+        </div>
+        <div class="mock-right">
+          <div class="mock-block accent"></div>
+          <div class="mock-block"></div>
+          <div class="mock-block"></div>
+        </div>
+      </div>
+    </div>
+    <div class="dir-info">
+      <div class="dir-name">Soft Brutalism</div>
+      <div class="dir-tag-row"><span class="dtag dtag-go">Distinctive</span><span class="dtag dtag-go">Liveable</span><span class="dtag dtag-go">Dopamine-tuned</span></div>
+      <div class="dir-desc">Brutalist structure and grid, tonal muted palette. Bold borders at 30% opacity. Warm near-black base. Dusty amber + sage accent.</div>
+    </div>
+  </div>
+</div>
+
+<p class="section-label">Recommended colour palette — Soft Brutalism dark</p>
+<div class="palette-grid">
+  <div class="swatch-card">
+    <div class="swatch-block" style="background:#12141C"></div>
+    <div class="swatch-info"><div class="swatch-name">Void</div><div class="swatch-hex">#12141C</div><div class="swatch-role">Page base bg</div></div>
+  </div>
+  <div class="swatch-card">
+    <div class="swatch-block" style="background:#1A1D27"></div>
+    <div class="swatch-info"><div class="swatch-name">Deep slate</div><div class="swatch-hex">#1A1D27</div><div class="swatch-role">Panels, sidebar</div></div>
+  </div>
+  <div class="swatch-card">
+    <div class="swatch-block" style="background:#22263A"></div>
+    <div class="swatch-info"><div class="swatch-name">Elevated</div><div class="swatch-hex">#22263A</div><div class="swatch-role">Cards, hover states</div></div>
+  </div>
+  <div class="swatch-card">
+    <div class="swatch-block" style="background:#C48B20"></div>
+    <div class="swatch-info"><div class="swatch-name">Dusty amber</div><div class="swatch-hex">#C48B20</div><div class="swatch-role">Primary accent — toned down from #E8A838</div></div>
+  </div>
+  <div class="swatch-card">
+    <div class="swatch-block" style="background:#5C8F72"></div>
+    <div class="swatch-info"><div class="swatch-name">Sage</div><div class="swatch-hex">#5C8F72</div><div class="swatch-role">Secondary accent — insight tags, success</div></div>
+  </div>
+  <div class="swatch-card">
+    <div class="swatch-block" style="background:#8B7EC8"></div>
+    <div class="swatch-info"><div class="swatch-name">Muted violet</div><div class="swatch-hex">#8B7EC8</div><div class="swatch-role">Graph nodes, tip tags</div></div>
+  </div>
+  <div class="swatch-card">
+    <div class="swatch-block" style="background:#E8C97A"></div>
+    <div class="swatch-info"><div class="swatch-name">Warm cream</div><div class="swatch-hex">#E8C97A</div><div class="swatch-role">Primary text — replaces harsh white</div></div>
+  </div>
+  <div class="swatch-card">
+    <div class="swatch-block" style="background:#7A7F94"></div>
+    <div class="swatch-info"><div class="swatch-name">Slate mist</div><div class="swatch-hex">#7A7F94</div><div class="swatch-role">Secondary text, labels, timestamps</div></div>
+  </div>
+  <div class="swatch-card">
+    <div class="swatch-block" style="background:#C9705A"></div>
+    <div class="swatch-info"><div class="swatch-name">Terracotta</div><div class="swatch-hex">#C9705A</div><div class="swatch-role">Warning tags — replaces neon red</div></div>
+  </div>
+</div>
+
+<p class="section-label">Dopamine calibration — does it hit right?</p>
+<div class="dopamine-bar-section">
+  <div class="dopamine-row">
+    <span class="dopamine-label">Current neo-brutalism</span>
+    <div class="dbar-track"><div class="dbar-fill" style="width:95%;background:#E83B3B"></div></div>
+    <span class="dbar-pct" style="color:#A32D2D">Too high</span>
+  </div>
+  <div class="zone-label">Overstimulating — users feel anxious, not productive</div>
+  <div class="dopamine-row">
+    <span class="dopamine-label">Pure glassmorphism</span>
+    <div class="dbar-track"><div class="dbar-fill" style="width:38%;background:#7A7F94"></div></div>
+    <span class="dbar-pct" style="color:#5F5E5A">Too low</span>
+  </div>
+  <div class="zone-label">Under-stimulating — feels calm but forgettable, no delight</div>
+  <div class="dopamine-row">
+    <span class="dopamine-label">Soft Brutalism</span>
+    <div class="dbar-track"><div class="dbar-fill" style="width:68%;background:#C48B20"></div></div>
+    <span class="dbar-pct" style="color:#854F0B">Just right</span>
+  </div>
+  <div class="zone-label">In the flow zone — engaging, rewarding, sustainable for 3+ hour sessions</div>
+</div>
+
+<p class="section-label">What changes from your current design</p>
+<table class="token-table">
+  <tr><th>Element</th><th>Current (too harsh)</th><th>Soft Brutalism fix</th></tr>
+  <tr><td>Page background</td><td><code>#000000</code> pure black</td><td><code>#12141C</code> warm near-black with blue undertone</td></tr>
+  <tr><td>Primary text</td><td><code>#FFFFFF</code> harsh white</td><td><code>#E8C97A</code> warm cream — 40% less glare</td></tr>
+  <tr><td>Accent color</td><td><code>#E8A838</code> vivid amber</td><td><code>#C48B20</code> dusty amber — same hue, 25% darker</td></tr>
+  <tr><td>Borders</td><td>2px solid bright color</td><td>1.5px solid at 25–35% opacity — structure without shouting</td></tr>
+  <tr><td>All caps labels</td><td>ALL_CAPS monospace</td><td>Sentence case — keep monospace font, lose the caps</td></tr>
+  <tr><td>Button style</td><td>Thick border, neon fill</td><td>1.5px dusty amber border, subtle amber bg at 12% opacity</td></tr>
+  <tr><td>Note tags</td><td>Full-saturation green/red</td><td>Sage green + terracotta — same meaning, half the noise</td></tr>
+  <tr><td>Welcome screen</td><td>High contrast graphic</td><td>Subtle amber orb glow on dark — same wow, softer delivery</td></tr>
+</table>
+
+</div>

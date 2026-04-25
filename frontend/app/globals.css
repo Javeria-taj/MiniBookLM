@@ -1,0 +1,167 @@
+/* ══════════════════════════════════════════════════════════════
+   LUMINA — Design System: "Soft Brutalism (30-40% Structural)"
+   Philosophy: Muted tonal palette for eye comfort, but sharp 
+   structural geometry (0px radius, hard shadows, 2px borders).
+   ══════════════════════════════════════════════════════════════ */
+
+@import "tailwindcss";
+
+/* ── DESIGN TOKENS ──────────────────────────────────────────── */
+:root {
+  /* Soft Brutalism Palette - KEPT MUTED FOR EYE COMFORT */
+  --bg-base: #12141C;       /* Void */
+  --bg-surface: #1A1D27;    /* Deep Slate */
+  --bg-elevated: #22263A;   /* Elevated */
+  --bg-hover: #2A2F45;
+
+  /* Accents */
+  --accent: #C48B20;        /* Dusty Amber */
+  --accent-glow: rgba(196, 139, 32, 0.15);
+  --accent-subtle: rgba(196, 139, 32, 0.15); 
+  
+  --accent-success: #5C8F72; /* Sage */
+  --accent-info: #8B7EC8;    /* Muted Violet */
+  --accent-danger: #C9705A;  /* Terracotta */
+
+  /* Typography */
+  --text-primary: #E8C97A;   /* Warm Cream */
+  --text-secondary: #7A7F94; /* Slate Mist */
+  --text-muted: #5B5F75;
+  --text-on-accent: #12141C;
+
+  /* Fonts */
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-mono: 'Space Mono', 'Courier New', monospace;
+  --font-body: 'Space Grotesk', sans-serif;
+
+  /* Borders - STRUCTURAL (2px, higher opacity) */
+  --border: rgba(122, 127, 148, 0.6);
+  --border-strong: rgba(122, 127, 148, 0.8);
+  --border-heavy: 2px solid var(--border);
+  --border-light: 1px solid rgba(122, 127, 148, 0.3);
+  --border-accent: 2px solid var(--accent);
+  
+  /* Radii - ZERO (Industrial/Brutalist) */
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-pill: 0px;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Shadows — HARD OFFSET (Brutalist) but muted colors */
+  --shadow-sm: 2px 2px 0px rgba(122, 127, 148, 0.4);
+  --shadow-md: 4px 4px 0px rgba(122, 127, 148, 0.4);
+  --shadow-lg: 6px 6px 0px rgba(122, 127, 148, 0.4);
+  --shadow-accent: 4px 4px 0px rgba(196, 139, 32, 0.4);
+
+  /* Layout */
+  --nav-h: 60px;
+  --sidebar-w: 270px;
+  --right-panel-w: 300px;
+
+  /* Motion - SNAP (Brutalist) */
+  --ease-snap: cubic-bezier(0.16, 1, 0.3, 1);
+  --transition: 150ms var(--ease-snap);
+}
+
+/* ── RESET & BASE ───────────────────────────────────────────── */
+*, *::before, *::after { 
+  box-sizing: border-box; 
+  margin: 0; 
+  padding: 0; 
+  border-radius: 0 !important; /* Force global sharp corners */
+}
+
+html {
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100dvh;
+  overflow: hidden;
+  transition: background var(--transition), color var(--transition);
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--bg-base); border-left: 1px solid var(--border); }
+::-webkit-scrollbar-thumb { background: var(--border-strong); }
+::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+
+/* ── UTILITIES ──────────────────────────────────────────────── */
+.hatch-bg {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 4px,
+    rgba(122, 127, 148, 0.03) 4px,
+    rgba(122, 127, 148, 0.03) 5px
+  );
+}
+
+/* ── ANIMATIONS ─────────────────────────────────────────────── */
+@keyframes snapUp {
+  from { opacity: 0; transform: translate(4px, 10px); }
+  to   { opacity: 1; transform: translate(0, 0); }
+}
+
+.msg-appear {
+  animation: snapUp 250ms var(--ease-snap) forwards;
+}
+
+/* Typing cursor - solid block */
+@keyframes flashOpacity {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.typing-cursor::after {
+  content: '█';
+  color: var(--accent);
+  animation: flashOpacity 0.8s step-end infinite;
+  margin-left: 4px;
+}
+
+/* Hard skeleton */
+@keyframes shimmerHard {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.skeleton-line {
+  height: 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  animation: shimmerHard 1.5s step-end infinite;
+}
+
+/* Highlighted text from AI */
+.highlight-ref {
+  background: var(--accent-subtle);
+  border-bottom: 2px solid var(--accent);
+  padding: 0 4px;
+  color: var(--text-primary);
+}
+
+/* ── COMPONENT OVERRIDES ─────────────────────────────────────── */
+button, input, select, textarea {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}

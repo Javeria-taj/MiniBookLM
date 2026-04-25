@@ -1,0 +1,244 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); }
+  .wrap { padding: 1.5rem 0; max-width: 680px; }
+  .score-row { display: flex; align-items: center; gap: 16px; margin-bottom: 1.5rem; padding: 1rem 1.25rem; background: var(--color-background-secondary); border-radius: var(--border-radius-lg); }
+  .score-num { font-size: 40px; font-weight: 500; color: var(--color-text-primary); line-height: 1; }
+  .score-label { font-size: 13px; color: var(--color-text-secondary); margin-top: 2px; }
+  .score-bar-wrap { flex: 1; }
+  .score-bar-track { height: 8px; background: var(--color-border-tertiary); border-radius: 4px; overflow: hidden; margin-bottom: 4px; }
+  .score-bar-fill { height: 100%; border-radius: 4px; background: #3B6D11; }
+  .score-caption { font-size: 12px; color: var(--color-text-secondary); }
+  .section-title { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .08em; color: var(--color-text-secondary); margin: 1.25rem 0 .6rem; }
+  .card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; margin-bottom: 8px; }
+  .card-header { display: flex; align-items: center; justify-content: space-between; padding: .75rem 1rem; cursor: pointer; user-select: none; }
+  .card-header:hover { background: var(--color-background-secondary); }
+  .card-left { display: flex; align-items: center; gap: 10px; }
+  .cat-label { font-size: 14px; font-weight: 500; color: var(--color-text-primary); }
+  .badge { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 4px; white-space: nowrap; }
+  .badge-pass  { background: #EAF3DE; color: #3B6D11; }
+  .badge-warn  { background: #FAEEDA; color: #854F0B; }
+  .badge-fail  { background: #FCEBEB; color: #A32D2D; }
+  .progress-mini { display: flex; align-items: center; gap: 8px; }
+  .bar-mini { width: 60px; height: 5px; background: var(--color-border-tertiary); border-radius: 3px; overflow: hidden; }
+  .bar-mini-fill { height: 100%; border-radius: 3px; }
+  .bar-green  { background: #639922; }
+  .bar-amber  { background: #BA7517; }
+  .bar-red    { background: #E24B4A; }
+  .pct-label  { font-size: 12px; font-weight: 500; color: var(--color-text-secondary); min-width: 28px; text-align: right; }
+  .card-body  { border-top: 0.5px solid var(--color-border-tertiary); padding: .75rem 1rem; display: none; }
+  .card-body.open { display: block; }
+  .item { display: flex; align-items: flex-start; gap: 8px; padding: 5px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .item:last-child { border-bottom: none; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+  .dot-green { background: #639922; }
+  .dot-amber { background: #BA7517; }
+  .dot-red   { background: #E24B4A; }
+  .item-text  { font-size: 13px; color: var(--color-text-primary); line-height: 1.5; flex: 1; }
+  .item-sub   { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+  .caret { font-size: 11px; color: var(--color-text-secondary); transition: transform .2s; }
+  .caret.open { transform: rotate(180deg); }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--color-text-secondary); }
+  .action-row { margin-top: 1.5rem; padding: 1rem 1.25rem; background: var(--color-background-secondary); border-radius: var(--border-radius-lg); }
+  .action-title { font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: .5rem; }
+  .priority-list { display: flex; flex-direction: column; gap: 6px; }
+  .priority-item { display: flex; gap: 8px; font-size: 13px; color: var(--color-text-secondary); line-height: 1.5; }
+  .priority-num { font-weight: 500; color: var(--color-text-primary); min-width: 18px; }
+</style>
+
+<div class="wrap">
+
+  <div class="score-row">
+    <div>
+      <div class="score-num">74<span style="font-size:20px;color:var(--color-text-secondary)">%</span></div>
+      <div class="score-label">Production readiness</div>
+    </div>
+    <div class="score-bar-wrap">
+      <div class="score-bar-track"><div class="score-bar-fill" style="width:74%"></div></div>
+      <div class="score-caption">15 of 22 requirements fully addressed · 5 gaps · 2 critical missing</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><span class="dot dot-green"></span>Covered</div>
+    <div class="legend-item"><span class="dot dot-amber"></span>Partial / needs work</div>
+    <div class="legend-item"><span class="dot dot-red"></span>Missing</div>
+  </div>
+
+  <p class="section-title">Click any category to expand</p>
+
+  <!-- UI/UX -->
+  <div class="card">
+    <div class="card-header" onclick="toggle(this)">
+      <div class="card-left">
+        <span class="cat-label">UI / UX Design</span>
+        <span class="badge badge-pass">Strong</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="progress-mini"><div class="bar-mini"><div class="bar-mini-fill bar-green" style="width:90%"></div></div><span class="pct-label">90%</span></div>
+        <span class="caret">▼</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="item"><span class="dot dot-green"></span><div class="item-text">Dark / light mode with CSS token system<div class="item-sub">data-theme attribute + full token swap — correctly implemented</div></div></div>
+      <div class="item"><span class="dot dot-green"></span><div class="item-text">Responsive layout — mobile, tablet, desktop<div class="item-sub">Breakpoints at 680px, 900px, 1100px covered</div></div></div>
+      <div class="item"><span class="dot dot-green"></span><div class="item-text">Smooth animations and transitions<div class="item-sub">fadeInUp, orbPulse, shimmer, typingBounce all defined</div></div></div>
+      <div class="item"><span class="dot dot-amber"></span><div class="item-text">Apple-level premium feel<div class="item-sub">Good foundation but Next.js migration must preserve all CSS vars and font loading exactly — verify with Lighthouse Visual score</div></div></div>
+      <div class="item"><span class="dot dot-green"></span><div class="item-text">Clear layout hierarchy with clean typography<div class="item-sub">Fraunces + DM Sans pairing is intentional and correct</div></div></div>
+    </div>
+  </div>
+
+  <!-- Core Feature UI -->
+  <div class="card">
+    <div class="card-header" onclick="toggle(this)">
+      <div class="card-left">
+        <span class="cat-label">Core Feature UI</span>
+        <span class="badge badge-warn">Partial</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="progress-mini"><div class="bar-mini"><div class="bar-mini-fill bar-amber" style="width:70%"></div></div><span class="pct-label">70%</span></div>
+        <span class="caret">▼</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="item"><span class="dot dot-green"></span><div class="item-text">Drag-and-drop document upload<div class="item-sub">Dropzone with drag-over states + file input fallback present</div></div></div>
+      <div class="item"><span class="dot dot-green"></span><div class="item-text">ChatGPT-style chat interface<div class="item-sub">User/AI bubbles, typewriter effect, message actions</div></div></div>
+      <div class="item"><span class="dot dot-green"></span><div class="item-text">Sidebar for documents<div class="item-sub">Search, file type badges, active state, remove action</div></div></div>
+      <div class="item"><span class="dot dot-green"></span><div class="item-text">Auto-generated notes panel<div class="item-sub">insight / tip / warning tags with refresh + manual add</div></div></div>
+      <div class="item"><span class="dot dot-green"></span><div class="item-text">Explanation level toggle (Beginner / Student / Expert)<div class="item-sub">Pill toggle in navbar — state tracked but NOT yet passed into mock responses</div></div></div>
+      <div class="item"><span class="dot dot-amber"></span><div class="item-text">Summarize / Explain / Quiz buttons<div class="item-sub">All present. Quiz interactive. But Quiz only has 2 hardcoded questions — needs dynamic generation from mock data</div></div></div>
+      <div class="item"><span class="dot dot-amber"></span><div class="item-text">Knowledge graph section<div class="item-sub">Canvas graph with physics drift exists but is placeholder only. Needs real node data flow from document context on tab switch</div></div></div>
+    </div>
+  </div>
+
+  <!-- Interaction Design -->
+  <div class="card">
+    <div class="card-header" onclick="toggle(this)">
+      <div class="card-left">
+        <span class="cat-label">Interaction Design</span>
+        <span class="badge badge-pass">Strong</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="progress-mini"><div class="bar-mini"><div class="bar-mini-fill bar-green" style="width:85%"></div></div><span class="pct-label">85%</span></div>
+        <span class="caret">▼</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="item"><span class="dot dot-green"></span><div class="item-text">Skeleton UI loading states<div class="item-sub">shimmer animation on notes refresh correctly implemented</div></div></div>
+      <div class="item"><span class="dot dot-green"></span><div class="item-text">Typing animation for AI responses<div class="item-sub">requestAnimationFrame-based typewriter with cursor blink</div></div></div>
+      <div class="item"><span class="dot dot-green"></span><div class="item-text">Highlighted referenced document sections<div class="item-sub">&lt;highlight&gt; tag → .highlight-ref CSS class rendered in AI messages</div></div></div>
+      <div class="item"><span class="dot dot-amber"></span><div class="item-text">Smooth transitions between responses<div class="item-sub">fadeInUp exists but needs staggered delay when multiple messages load at once (e.g. on page refresh from state)</div></div></div>
+    </div>
+  </div>
+
+  <!-- Components -->
+  <div class="card">
+    <div class="card-header" onclick="toggle(this)">
+      <div class="card-left">
+        <span class="cat-label">Component Coverage</span>
+        <span class="badge badge-pass">Complete</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="progress-mini"><div class="bar-mini"><div class="bar-mini-fill bar-green" style="width:100%"></div></div><span class="pct-label">100%</span></div>
+        <span class="caret">▼</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="item"><span class="dot dot-green"></span><div class="item-text">Navbar with branding, workspace pill, level toggle, theme, avatar</div></div>
+      <div class="item"><span class="dot dot-green"></span><div class="item-text">Left sidebar with document list + search + stats</div></div>
+      <div class="item"><span class="dot dot-green"></span><div class="item-text">Main chat window with action bar + message log + input</div></div>
+      <div class="item"><span class="dot dot-green"></span><div class="item-text">Right panel: Notes / Graph / Citations tabs</div></div>
+      <div class="item"><span class="dot dot-green"></span><div class="item-text">Settings modal with full controls</div></div>
+      <div class="item"><span class="dot dot-green"></span><div class="item-text">Upload modal with dropzone + alt sources</div></div>
+    </div>
+  </div>
+
+  <!-- Code Quality -->
+  <div class="card">
+    <div class="card-header" onclick="toggle(this)">
+      <div class="card-left">
+        <span class="cat-label">Code Quality</span>
+        <span class="badge badge-warn">Needs work</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="progress-mini"><div class="bar-mini"><div class="bar-mini-fill bar-amber" style="width:60%"></div></div><span class="pct-label">60%</span></div>
+        <span class="caret">▼</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="item"><span class="dot dot-green"></span><div class="item-text">Modular CSS with design tokens<div class="item-sub">CSS custom properties are well-structured and semantic</div></div></div>
+      <div class="item"><span class="dot dot-green"></span><div class="item-text">Reusable JS functions<div class="item-sub">renderDocuments, renderNotes, showToast etc. are clean utilities</div></div></div>
+      <div class="item"><span class="dot dot-amber"></span><div class="item-text">TypeScript migration (Next.js plan)<div class="item-sub">Plan mentions TypeScript but current code is vanilla JS — types for Message, Document, Note objects not yet defined</div></div></div>
+      <div class="item"><span class="dot dot-red"></span><div class="item-text">No error boundaries or null-safety<div class="item-sub">DOM refs like $('graphCanvas') can silently fail — needs optional chaining + fallback UI for each panel</div></div></div>
+      <div class="item"><span class="dot dot-red"></span><div class="item-text">No accessibility audit done<div class="item-sub">ARIA roles exist but focus trapping in modals, keyboard nav in doc list, and screen reader live regions are unverified</div></div></div>
+      <div class="item"><span class="dot dot-amber"></span><div class="item-text">No unit or integration tests<div class="item-sub">Plan mentions lint + build only — no Vitest/Jest for utility functions, no Playwright for E2E flows</div></div></div>
+    </div>
+  </div>
+
+  <!-- Performance -->
+  <div class="card">
+    <div class="card-header" onclick="toggle(this)">
+      <div class="card-left">
+        <span class="cat-label">Performance</span>
+        <span class="badge badge-warn">Partial</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="progress-mini"><div class="bar-mini"><div class="bar-mini-fill bar-amber" style="width:55%"></div></div><span class="pct-label">55%</span></div>
+        <span class="caret">▼</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="item"><span class="dot dot-green"></span><div class="item-text">Debounce on resize<div class="item-sub">200ms debounce correctly applied to window resize handler</div></div></div>
+      <div class="item"><span class="dot dot-red"></span><div class="item-text">Canvas animation not cancelled on tab switch<div class="item-sub">graphAnim RAF loop keeps running even when Graph tab is inactive — drains battery. Must cancelAnimationFrame on tab blur</div></div></div>
+      <div class="item"><span class="dot dot-red"></span><div class="item-text">No virtual list for chat messages<div class="item-sub">Long sessions will accumulate hundreds of DOM nodes. Need windowing (e.g. react-window) for production</div></div></div>
+      <div class="item"><span class="dot dot-amber"></span><div class="item-text">No code splitting or lazy loading<div class="item-sub">Next.js plan will help here via dynamic() imports — but must be explicitly implemented per panel/modal</div></div></div>
+      <div class="item"><span class="dot dot-amber"></span><div class="item-text">Google Fonts loaded synchronously<div class="item-sub">next/font/google will fix this — make sure font-display: swap and preconnect are set in layout.tsx</div></div></div>
+    </div>
+  </div>
+
+  <!-- Backend Readiness -->
+  <div class="card">
+    <div class="card-header" onclick="toggle(this)">
+      <div class="card-left">
+        <span class="cat-label">Backend Integration Readiness</span>
+        <span class="badge badge-warn">Partial</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="progress-mini"><div class="bar-mini"><div class="bar-mini-fill bar-amber" style="width:65%"></div></div><span class="pct-label">65%</span></div>
+        <span class="caret">▼</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="item"><span class="dot dot-green"></span><div class="item-text">Mock data isolated from UI logic<div class="item-sub">MOCK_DOCS, MOCK_NOTES, MOCK_RESPONSES are top-level constants — easy to swap</div></div></div>
+      <div class="item"><span class="dot dot-amber"></span><div class="item-text">No API contract defined<div class="item-sub">Plan mentions lib/api.ts but no request/response shape is documented. Your teammate needs typed interfaces to build against</div></div></div>
+      <div class="item"><span class="dot dot-red"></span><div class="item-text">No streaming API support<div class="item-sub">Current typewriter runs on full strings locally. Real RAG backend will stream tokens via SSE or WebSocket — needs ReadableStream handler</div></div></div>
+      <div class="item"><span class="dot dot-amber"></span><div class="item-text">No auth or session handling<div class="item-sub">User avatar is hardcoded "JV" — workspace and session state need to be passed from auth layer</div></div></div>
+      <div class="item"><span class="dot dot-red"></span><div class="item-text">File upload sends no real request<div class="item-sub">simulateUpload() only animates — no FormData / multipart POST skeleton for your teammate to hook into</div></div></div>
+    </div>
+  </div>
+
+  <!-- Priority Actions -->
+  <div class="action-row">
+    <div class="action-title">Top 5 things to fix before shipping</div>
+    <div class="priority-list">
+      <div class="priority-item"><span class="priority-num">1.</span>Add ReadableStream / SSE support in ChatPanel so real token streaming works without replacing the typewriter UI</div>
+      <div class="priority-item"><span class="priority-num">2.</span>Cancel the canvas RAF loop when the Graph tab is not active — add a visibility observer or tab-change listener</div>
+      <div class="priority-item"><span class="priority-num">3.</span>Write TypeScript interfaces: Message, Document, Note, Citation, ApiResponse — share these with your teammate immediately</div>
+      <div class="priority-item"><span class="priority-num">4.</span>Add a FormData upload skeleton in the upload handler so the backend endpoint is ready to receive real files</div>
+      <div class="priority-item"><span class="priority-num">5.</span>Run axe-core accessibility audit and fix focus trap in both modals + add keyboard nav to the document list</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function toggle(header) {
+  const body = header.nextElementSibling;
+  const caret = header.querySelector('.caret');
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  caret.classList.toggle('open', !isOpen);
+}
+</script>
