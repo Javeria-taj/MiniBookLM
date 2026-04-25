@@ -123,3 +123,21 @@ class GraphResponse(BaseModel):
     nodes: list[GraphNode]
     edges: list[GraphEdge]
     notebook_id: str
+
+
+# ---------------------------------------------------------------------------
+# GET /notebook/{id}/mindmap
+# ---------------------------------------------------------------------------
+
+class MindmapNode(BaseModel):
+    id: str
+    label: str
+    children: list["MindmapNode"] = []
+
+# Required for Pydantic v2 to resolve the self-referential type annotation.
+MindmapNode.model_rebuild()
+
+
+class MindmapResponse(BaseModel):
+    root: MindmapNode
+    notebook_id: str
